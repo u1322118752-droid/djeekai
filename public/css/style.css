@@ -636,27 +636,36 @@ a { color: inherit; text-decoration: none; }
 }
 
 .skills-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
 }
 
 .skill-item {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  padding: 7px 16px;
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  border-radius: 20px;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   transition: var(--transition);
 }
 
-.skill-item:hover {
-  background: rgba(37, 99, 235, 0.15);
-  border-color: var(--accent);
+.skill-item::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
-.skill-name { font-size: 0.88rem; font-weight: 500; color: var(--text); }
+.skill-item:hover {
+  border-color: var(--accent);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.skill-name { font-size: 0.9rem; font-weight: 500; color: var(--text); }
 
 /* ===== VEILLE ===== */
 .veille-grid {
@@ -987,7 +996,7 @@ a { color: inherit; text-decoration: none; }
 
   .cards-grid { grid-template-columns: 1fr; }
 
-  .skills-list { grid-template-columns: 1fr; }
+  .skills-list { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 480px) {
