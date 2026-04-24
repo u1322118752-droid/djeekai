@@ -7,7 +7,10 @@
       "Bash(curl -s -X POST http://localhost:3000/api/admin/login -H 'Content-Type: application/json' -d '{\"password\":\"admin123\"}')",
       "PowerShell(Get-Process *)",
       "PowerShell(netstat *)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\)\\); console.log\\('site keys:', Object.keys\\(d.site || {}\\)\\);\")",
+      "Bash(node -e \"const d=require\\('/tmp/apitest.json'\\); console.log\\('site keys:', Object.keys\\(d.site||{}\\)\\);\")",
+      "PowerShell(Get-NetTCPConnection *)"
     ]
   }
 }

@@ -19,6 +19,7 @@ let competencesState = [];
   renderCompetencesAdmin();
   renderVeilleList();
   renderContactForm();
+  renderSiteForm();
 })();
 
 async function verifyToken() {
@@ -72,16 +73,20 @@ function showSection(name) {
   document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
 
   document.getElementById(`section-${name}`).classList.add('active');
+  const labelMap = {
+    dashboard: 'tableau', presentation: 'présentation', projets: 'projets',
+    tps: 'travaux', competences: 'compétences', veille: 'veille',
+    contact: 'cv &', personnalisation: 'personnalisation', parametres: 'paramètres'
+  };
+  const needle = labelMap[name] || name;
   document.querySelectorAll('.sidebar-link').forEach(l => {
-    if (l.textContent.trim().toLowerCase().includes(name.replace('parametres','paramètres').replace('presentation','présentation'))) {
-      l.classList.add('active');
-    }
+    if (l.textContent.trim().toLowerCase().includes(needle)) l.classList.add('active');
   });
 
   const titles = {
     dashboard: 'Tableau de bord', presentation: 'Présentation', projets: 'Projets',
     tps: 'Travaux Pratiques', competences: 'Compétences', veille: 'Veille Technologique',
-    contact: 'CV & Contact', parametres: 'Paramètres'
+    contact: 'CV & Contact', personnalisation: 'Personnalisation du site', parametres: 'Paramètres'
   };
   document.getElementById('topbar-title').textContent = titles[name] || name;
 
@@ -621,9 +626,6 @@ function renderCompetencesAdmin() {
           <div class="skill-admin-row">
             <input type="text" value="${esc(sk.nom)}" placeholder="Nom de la compétence"
               oninput="competencesState[${ci}].competences[${si}].nom = this.value" />
-            <input type="range" min="0" max="100" value="${sk.niveau}"
-              oninput="competencesState[${ci}].competences[${si}].niveau = +this.value; this.nextElementSibling.textContent = this.value + '%'" />
-            <span class="skill-pct-display">${sk.niveau}%</span>
             <button class="btn btn-ghost btn-sm btn-icon" onclick="removeSkill(${ci}, ${si})" title="Supprimer">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -734,6 +736,112 @@ async function deleteCV() {
     data.contact.cvNom = '';
     renderContactForm();
     toast('success', 'CV supprimé', '');
+  } catch (err) {
+    toast('error', 'Erreur', err.message);
+  }
+}
+
+// ===== PERSONNALISATION SITE =====
+function renderSiteForm() {
+  const s = data.site || {};
+  const val = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+
+  val('site-navBrand', s.navBrand);
+  val('site-metaTitle', s.metaTitle);
+
+  const nav = s.nav || {};
+  val('site-nav-presentation', nav.presentation);
+  val('site-nav-projets', nav.projets);
+  val('site-nav-tps', nav.tps);
+  val('site-nav-competences', nav.competences);
+  val('site-nav-veille', nav.veille);
+  val('site-nav-contact', nav.contact);
+
+  const sec = s.sections || {};
+  val('site-sec-presentation', sec.presentation);
+  val('site-sec-projets', sec.projets);
+  val('site-sec-tps', sec.tps);
+  val('site-sec-competences', sec.competences);
+  val('site-sec-veille', sec.veille);
+  val('site-sec-contact', sec.contact);
+
+  val('site-presAbout', s.presAbout);
+  const formation = s.formation || {};
+  val('site-formation-specialite', formation.specialite);
+  val('site-formation-annee', formation.annee);
+
+  const t = s.terminal || {};
+  val('site-t-fichier', t.fichier);
+  val('site-t-cmd1', t.cmd1);
+  val('site-t-cmd2', t.cmd2);
+  val('site-t-rep2', t.rep2);
+  val('site-t-cmd3', t.cmd3);
+  val('site-t-rep3', t.rep3);
+
+  const hero = s.hero || {};
+  val('site-hero-btn1', hero.btn1);
+  val('site-hero-btn2', hero.btn2);
+
+  const cs = s.contactSection || {};
+  val('site-contact-titre', cs.titre);
+  val('site-contact-intro', cs.intro);
+  val('site-contact-cvTitre', cs.cvTitre);
+  val('site-contact-cvDesc', cs.cvDesc);
+
+  val('site-footer', s.footer);
+}
+
+const getVal = (id) => document.getElementById(id)?.value || '';
+
+async function saveSite() {
+  try {
+    const payload = {
+      navBrand: getVal('site-navBrand'),
+      metaTitle: getVal('site-metaTitle'),
+      nav: {
+        presentation: getVal('site-nav-presentation'),
+        projets: getVal('site-nav-projets'),
+        tps: getVal('site-nav-tps'),
+        competences: getVal('site-nav-competences'),
+        veille: getVal('site-nav-veille'),
+        contact: getVal('site-nav-contact')
+      },
+      sections: {
+        presentation: getVal('site-sec-presentation'),
+        projets: getVal('site-sec-projets'),
+        tps: getVal('site-sec-tps'),
+        competences: getVal('site-sec-competences'),
+        veille: getVal('site-sec-veille'),
+        contact: getVal('site-sec-contact')
+      },
+      presAbout: getVal('site-presAbout'),
+      formation: {
+        specialite: getVal('site-formation-specialite'),
+        annee: getVal('site-formation-annee')
+      },
+      terminal: {
+        fichier: getVal('site-t-fichier'),
+        cmd1: getVal('site-t-cmd1'),
+        cmd2: getVal('site-t-cmd2'),
+        rep2: getVal('site-t-rep2'),
+        cmd3: getVal('site-t-cmd3'),
+        rep3: getVal('site-t-rep3')
+      },
+      hero: {
+        btn1: getVal('site-hero-btn1'),
+        btn2: getVal('site-hero-btn2')
+      },
+      contactSection: {
+        titre: getVal('site-contact-titre'),
+        intro: getVal('site-contact-intro'),
+        cvTitre: getVal('site-contact-cvTitre'),
+        cvDesc: getVal('site-contact-cvDesc')
+      },
+      footer: getVal('site-footer')
+    };
+    const result = await apiJSON('/api/admin/site', 'PUT', payload);
+    data.site = result;
+    toast('success', 'Personnalisation sauvegardée', 'Toutes les modifications sont appliquées sur le site.');
   } catch (err) {
     toast('error', 'Erreur', err.message);
   }

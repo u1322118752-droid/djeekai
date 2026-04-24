@@ -502,20 +502,6 @@ a { text-decoration: none; color: inherit; }
   outline: none;
 }
 
-.skill-admin-row input[type="range"] {
-  width: 120px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.skill-admin-row .skill-pct-display {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--accent-light);
-  width: 36px;
-  text-align: right;
-}
-
 .category-add-skill {
   padding: 0 12px 12px;
 }
@@ -657,25 +643,6 @@ a { text-decoration: none; color: inherit; }
 
 .stat-info strong { display: block; font-size: 1.5rem; font-weight: 700; }
 .stat-info span { font-size: 0.82rem; color: var(--text-muted); }
-
-/* ===== RANGE SLIDER ===== */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  outline: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
-  border: 2px solid var(--bg-card);
-}
 
 /* ===== TABS ===== */
 .icon-select {

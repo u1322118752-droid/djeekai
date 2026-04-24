@@ -45,6 +45,10 @@
         <i class="fa-solid fa-address-card"></i> CV & Contact
       </button>
 
+      <button class="sidebar-link" onclick="showSection('personnalisation')">
+        <i class="fa-solid fa-palette"></i> Personnalisation
+      </button>
+
       <span class="nav-section-title">Compte</span>
       <button class="sidebar-link" onclick="showSection('parametres')">
         <i class="fa-solid fa-gear"></i> Paramètres
@@ -263,6 +267,211 @@
                 <label class="form-label">URL GitHub</label>
                 <input type="url" class="form-input" id="contact-github" placeholder="https://github.com/..." />
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PERSONNALISATION ===== -->
+      <div class="page-section" id="section-personnalisation">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-palette"></i> Personnalisation du site</h2>
+          <button class="btn btn-primary" onclick="saveSite()"><i class="fa-solid fa-floppy-disk"></i> Enregistrer tout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-bars"></i> Navigation</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nom du site (brand)</label>
+                <input type="text" class="form-input" id="site-navBrand" placeholder="Portfolio" />
+                <span class="form-hint">Affiché entre &lt; /&gt; dans la navbar</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Titre de l'onglet (balise title)</label>
+                <input type="text" class="form-input" id="site-metaTitle" placeholder="Portfolio BTS CIO – SISR" />
+              </div>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Libellés des liens de navigation</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Présentation</label>
+                <input type="text" class="form-input" id="site-nav-presentation" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Projets</label>
+                <input type="text" class="form-input" id="site-nav-projets" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">TPs</label>
+                <input type="text" class="form-input" id="site-nav-tps" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Compétences</label>
+                <input type="text" class="form-input" id="site-nav-competences" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Veille</label>
+                <input type="text" class="form-input" id="site-nav-veille" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact</label>
+                <input type="text" class="form-input" id="site-nav-contact" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Titres des sections -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-heading"></i> Titres des sections</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Section Présentation</label>
+                <input type="text" class="form-input" id="site-sec-presentation" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Section Projets</label>
+                <input type="text" class="form-input" id="site-sec-projets" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Section TPs</label>
+                <input type="text" class="form-input" id="site-sec-tps" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Section Compétences</label>
+                <input type="text" class="form-input" id="site-sec-competences" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Section Veille</label>
+                <input type="text" class="form-input" id="site-sec-veille" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Section Contact</label>
+                <input type="text" class="form-input" id="site-sec-contact" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Présentation / Formation -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-user"></i> Bloc Présentation</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Titre "À propos de moi"</label>
+                <input type="text" class="form-input" id="site-presAbout" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Spécialité affichée</label>
+                <input type="text" class="form-input" id="site-formation-specialite" placeholder="Option SISR" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Années de formation</label>
+              <input type="text" class="form-input" id="site-formation-annee" placeholder="2024 – 2026" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-terminal"></i> Terminal (bloc de code)</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nom du fichier (barre de titre)</label>
+                <input type="text" class="form-input" id="site-t-fichier" placeholder="whoami.sh" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Commande 1</label>
+                <input type="text" class="form-input" id="site-t-cmd1" placeholder="whoami" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Commande 2</label>
+                <input type="text" class="form-input" id="site-t-cmd2" placeholder="cat formation.txt" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Réponse commande 2</label>
+                <input type="text" class="form-input" id="site-t-rep2" placeholder="BTS CIO option SISR" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Commande 3</label>
+                <input type="text" class="form-input" id="site-t-cmd3" placeholder="cat objectif.txt" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Réponse commande 3</label>
+                <input type="text" class="form-input" id="site-t-rep3" placeholder="Administrateur Système & Réseaux" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero buttons -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-hand-pointer"></i> Boutons Hero</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Bouton principal (bleu)</label>
+                <input type="text" class="form-input" id="site-hero-btn1" placeholder="Voir mes projets" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bouton secondaire (contour)</label>
+                <input type="text" class="form-input" id="site-hero-btn2" placeholder="Me contacter" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Contact -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-address-card"></i> Section Contact</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Titre "Restons en contact"</label>
+                <input type="text" class="form-input" id="site-contact-titre" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Titre de la carte CV</label>
+                <input type="text" class="form-input" id="site-contact-cvTitre" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Texte d'introduction</label>
+              <textarea class="form-textarea" id="site-contact-intro" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description de la carte CV</label>
+              <textarea class="form-textarea" id="site-contact-cvDesc" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-shoe-prints"></i> Footer</span></div>
+          <div class="edit-card-body">
+            <div class="form-group">
+              <label class="form-label">Texte du footer</label>
+              <input type="text" class="form-input" id="site-footer" placeholder="Portfolio BTS CIO option SISR" />
             </div>
           </div>
         </div>

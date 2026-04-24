@@ -1,0 +1,44 @@
+{
+  "metaTitle": "Portfolio BTS CIO – SISR",
+  "navBrand": "Portfolio",
+  "nav": {
+    "presentation": "Présentation",
+    "projets": "Projets",
+    "tps": "TPs",
+    "competences": "Compétences",
+    "veille": "Veille",
+    "contact": "Contact"
+  },
+  "sections": {
+    "presentation": "Présentation",
+    "projets": "Projets",
+    "tps": "Travaux Pratiques",
+    "competences": "Compétences",
+    "veille": "Veille Technologique",
+    "contact": "CV & Contact"
+  },
+  "presAbout": "À propos de moi",
+  "formation": {
+    "specialite": "Option SISR",
+    "annee": "2024 – 2026"
+  },
+  "terminal": {
+    "fichier": "whoami.sh",
+    "cmd1": "whoami",
+    "cmd2": "cat formation.txt",
+    "rep2": "BTS CIO option SISR",
+    "cmd3": "cat objectif.txt",
+    "rep3": "Administrateur Système & Réseaux"
+  },
+  "hero": {
+    "btn1": "Voir mes projets",
+    "btn2": "Me contacter"
+  },
+  "contactSection": {
+    "titre": "Restons en contact",
+    "intro": "N'hésitez pas à me contacter pour toute opportunité de stage, alternance ou simplement pour échanger.",
+    "cvTitre": "Mon Curriculum Vitæ",
+    "cvDesc": "Téléchargez mon CV pour en savoir plus sur mon parcours et mes compétences."
+  },
+  "footer": "Portfolio BTS CIO option SISR"
+}

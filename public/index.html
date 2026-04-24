@@ -15,18 +15,18 @@
   <nav class="navbar" id="navbar">
     <div class="nav-container">
       <a href="#accueil" class="nav-brand">
-        <span class="brand-bracket">&lt;</span>Portfolio<span class="brand-bracket">/&gt;</span>
+        <span class="brand-bracket">&lt;</span><span id="nav-brand-text">Portfolio</span><span class="brand-bracket">/&gt;</span>
       </a>
       <button class="nav-toggle" id="navToggle" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links" id="navLinks">
-        <li><a href="#presentation" class="nav-link">Présentation</a></li>
-        <li><a href="#projets" class="nav-link">Projets</a></li>
-        <li><a href="#tps" class="nav-link">TPs</a></li>
-        <li><a href="#competences" class="nav-link">Compétences</a></li>
-        <li><a href="#veille" class="nav-link">Veille</a></li>
-        <li><a href="#contact" class="nav-link">Contact</a></li>
+        <li><a href="#presentation" class="nav-link" id="nav-link-presentation">Présentation</a></li>
+        <li><a href="#projets" class="nav-link" id="nav-link-projets">Projets</a></li>
+        <li><a href="#tps" class="nav-link" id="nav-link-tps">TPs</a></li>
+        <li><a href="#competences" class="nav-link" id="nav-link-competences">Compétences</a></li>
+        <li><a href="#veille" class="nav-link" id="nav-link-veille">Veille</a></li>
+        <li><a href="#contact" class="nav-link" id="nav-link-contact">Contact</a></li>
         <li><a href="/admin" class="nav-link nav-admin" title="Panel admin"><i class="fa-solid fa-lock"></i></a></li>
       </ul>
     </div>
@@ -57,8 +57,8 @@
         <span id="hero-localisation">Ville, France</span>
       </div>
       <div class="hero-actions">
-        <a href="#projets" class="btn btn-primary">Voir mes projets</a>
-        <a href="#contact" class="btn btn-outline">Me contacter</a>
+        <a href="#projets" class="btn btn-primary" id="hero-btn1">Voir mes projets</a>
+        <a href="#contact" class="btn btn-outline" id="hero-btn2">Me contacter</a>
       </div>
     </div>
     <div class="hero-scroll">
@@ -71,17 +71,17 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">01</span>
-        <h2 class="section-title">Présentation</h2>
+        <h2 class="section-title" id="title-presentation">Présentation</h2>
         <div class="section-line"></div>
       </div>
       <div class="presentation-grid">
         <div class="presentation-text fade-in">
-          <h3>À propos de moi</h3>
+          <h3 id="pres-about-title">À propos de moi</h3>
           <p id="pres-description">Chargement...</p>
           <div class="pres-info-grid" id="pres-info-grid">
             <div class="info-item"><i class="fa-solid fa-school"></i><span id="pres-ecole"></span></div>
             <div class="info-item"><i class="fa-solid fa-location-dot"></i><span id="pres-localisation"></span></div>
-            <div class="info-item"><i class="fa-solid fa-network-wired"></i><span>Option SISR</span></div>
+            <div class="info-item"><i class="fa-solid fa-network-wired"></i><span id="pres-specialite">Option SISR</span></div>
             <div class="info-item"><i class="fa-solid fa-calendar"></i><span id="pres-annee">2024 – 2026</span></div>
           </div>
         </div>
@@ -89,15 +89,15 @@
           <div class="terminal-window">
             <div class="terminal-header">
               <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <span class="terminal-title">whoami.sh</span>
+              <span class="terminal-title" id="t-fichier">whoami.sh</span>
             </div>
             <div class="terminal-body" id="terminal-body">
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">whoami</span></div>
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd" id="t-cmd1">whoami</span></div>
               <div class="terminal-line t-output" id="t-nom">→ Chargement...</div>
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">cat formation.txt</span></div>
-              <div class="terminal-line t-output">→ BTS CIO option SISR</div>
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">cat objectif.txt</span></div>
-              <div class="terminal-line t-output">→ Administrateur Système & Réseaux</div>
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd" id="t-cmd2">cat formation.txt</span></div>
+              <div class="terminal-line t-output" id="t-rep2">→ BTS CIO option SISR</div>
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd" id="t-cmd3">cat objectif.txt</span></div>
+              <div class="terminal-line t-output" id="t-rep3">→ Administrateur Système & Réseaux</div>
               <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd blink">_</span></div>
             </div>
           </div>
@@ -111,7 +111,7 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">02</span>
-        <h2 class="section-title">Projets</h2>
+        <h2 class="section-title" id="title-projets">Projets</h2>
         <div class="section-line"></div>
       </div>
       <div class="cards-grid" id="projets-grid">
@@ -128,7 +128,7 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">03</span>
-        <h2 class="section-title">Travaux Pratiques</h2>
+        <h2 class="section-title" id="title-tps">Travaux Pratiques</h2>
         <div class="section-line"></div>
       </div>
       <div class="cards-grid" id="tps-grid">
@@ -145,7 +145,7 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">04</span>
-        <h2 class="section-title">Compétences</h2>
+        <h2 class="section-title" id="title-competences">Compétences</h2>
         <div class="section-line"></div>
       </div>
       <div class="competences-wrapper" id="competences-wrapper">
@@ -159,7 +159,7 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">05</span>
-        <h2 class="section-title">Veille Technologique</h2>
+        <h2 class="section-title" id="title-veille">Veille Technologique</h2>
         <div class="section-line"></div>
       </div>
       <div class="veille-grid" id="veille-grid">
@@ -176,13 +176,13 @@
     <div class="container">
       <div class="section-header">
         <span class="section-tag">06</span>
-        <h2 class="section-title">CV & Contact</h2>
+        <h2 class="section-title" id="title-contact">CV & Contact</h2>
         <div class="section-line"></div>
       </div>
       <div class="contact-wrapper">
         <div class="contact-info fade-in">
-          <h3>Restons en contact</h3>
-          <p class="contact-intro">N'hésitez pas à me contacter pour toute opportunité de stage, alternance ou simplement pour échanger.</p>
+          <h3 id="contact-titre">Restons en contact</h3>
+          <p class="contact-intro" id="contact-intro">N'hésitez pas à me contacter pour toute opportunité de stage, alternance ou simplement pour échanger.</p>
           <div class="contact-items" id="contact-items">
             <!-- Filled by JS -->
           </div>
@@ -200,7 +200,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container">
-      <p>Portfolio BTS CIO option SISR &mdash; <span id="footer-nom">Étudiant</span></p>
+      <p><span id="footer-text">Portfolio BTS CIO option SISR</span> &mdash; <span id="footer-nom">Étudiant</span></p>
       <p class="footer-sub">
         <a href="/admin" class="footer-admin"><i class="fa-solid fa-lock"></i> Administration</a>
       </p>

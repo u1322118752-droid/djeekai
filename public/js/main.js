@@ -59,12 +59,75 @@ async function loadData() {
 }
 
 function renderAll() {
+  renderSite(siteData.site);
   renderPresentation(siteData.presentation);
   renderProjets(siteData.projets?.items || []);
   renderTPs(siteData.tps?.items || []);
   renderCompetences(siteData.competences?.categories || []);
   renderVeille(siteData.veille?.items || []);
   renderContact(siteData.contact);
+}
+
+// ===== SITE SETTINGS =====
+function renderSite(s) {
+  if (!s) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
+
+  // Meta
+  if (s.metaTitle) document.title = s.metaTitle;
+
+  // Navbar
+  set('nav-brand-text', s.navBrand);
+  if (s.nav) {
+    set('nav-link-presentation', s.nav.presentation);
+    set('nav-link-projets', s.nav.projets);
+    set('nav-link-tps', s.nav.tps);
+    set('nav-link-competences', s.nav.competences);
+    set('nav-link-veille', s.nav.veille);
+    set('nav-link-contact', s.nav.contact);
+  }
+
+  // Section titles
+  if (s.sections) {
+    set('title-presentation', s.sections.presentation);
+    set('title-projets', s.sections.projets);
+    set('title-tps', s.sections.tps);
+    set('title-competences', s.sections.competences);
+    set('title-veille', s.sections.veille);
+    set('title-contact', s.sections.contact);
+  }
+
+  // Présentation
+  set('pres-about-title', s.presAbout);
+  if (s.formation) {
+    set('pres-specialite', s.formation.specialite);
+    set('pres-annee', s.formation.annee);
+  }
+
+  // Terminal
+  if (s.terminal) {
+    set('t-fichier', s.terminal.fichier);
+    set('t-cmd1', s.terminal.cmd1);
+    set('t-cmd2', s.terminal.cmd2);
+    set('t-rep2', `→ ${s.terminal.rep2}`);
+    set('t-cmd3', s.terminal.cmd3);
+    set('t-rep3', `→ ${s.terminal.rep3}`);
+  }
+
+  // Hero buttons
+  if (s.hero) {
+    set('hero-btn1', s.hero.btn1);
+    set('hero-btn2', s.hero.btn2);
+  }
+
+  // Contact section
+  if (s.contactSection) {
+    set('contact-titre', s.contactSection.titre);
+    set('contact-intro', s.contactSection.intro);
+  }
+
+  // Footer
+  set('footer-text', s.footer);
 }
 
 // ===== PRÉSENTATION =====
@@ -151,8 +214,6 @@ function cardHTML(item, type) {
 }
 
 // ===== COMPÉTENCES =====
-let skillBarsAnimated = false;
-
 function renderCompetences(categories) {
   const wrapper = document.getElementById('competences-wrapper');
   if (!categories.length) {
@@ -168,13 +229,7 @@ function renderCompetences(categories) {
       <div class="skills-list">
         ${(cat.competences || []).map(skill => `
           <div class="skill-item">
-            <div class="skill-info">
-              <span class="skill-name">${esc(skill.nom)}</span>
-              <span class="skill-pct">${skill.niveau}%</span>
-            </div>
-            <div class="skill-bar">
-              <div class="skill-fill" data-level="${skill.niveau}"></div>
-            </div>
+            <span class="skill-name">${esc(skill.nom)}</span>
           </div>
         `).join('')}
       </div>
@@ -182,23 +237,6 @@ function renderCompetences(categories) {
   `).join('');
 
   wrapper.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-}
-
-function animateSkillBars() {
-  if (skillBarsAnimated) return;
-  document.querySelectorAll('.skill-fill').forEach(bar => {
-    bar.style.width = bar.dataset.level + '%';
-  });
-  skillBarsAnimated = true;
-}
-
-// Also observe the competences section directly
-const compSection = document.getElementById('competences');
-if (compSection) {
-  const compObs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) animateSkillBars();
-  }, { threshold: 0.2 });
-  compObs.observe(compSection);
 }
 
 // ===== VEILLE =====
@@ -268,11 +306,13 @@ function renderContact(data) {
     .join('');
 
   const cvWrapper = document.getElementById('contact-cv-wrapper');
+  const cvTitre = siteData.site?.contactSection?.cvTitre || 'Mon Curriculum Vitæ';
+  const cvDesc = siteData.site?.contactSection?.cvDesc || 'Téléchargez mon CV pour en savoir plus sur mon parcours et mes compétences.';
   if (data.cv) {
     cvWrapper.innerHTML = `
       <div class="cv-icon"><i class="fa-solid fa-file-pdf"></i></div>
-      <h4>Mon Curriculum Vitæ</h4>
-      <p>Téléchargez mon CV pour en savoir plus sur mon parcours et mes compétences.</p>
+      <h4>${esc(cvTitre)}</h4>
+      <p>${esc(cvDesc)}</p>
       <a href="${data.cv}" download="${data.cvNom || 'CV.pdf'}" class="btn btn-primary">
         <i class="fa-solid fa-download"></i> Télécharger le CV
       </a>

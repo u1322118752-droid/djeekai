@@ -636,36 +636,27 @@ a { color: inherit; text-decoration: none; }
 }
 
 .skills-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.skill-item { display: flex; flex-direction: column; gap: 8px; }
-
-.skill-info {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-item {
+  display: inline-flex;
   align-items: center;
+  padding: 7px 16px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 20px;
+  transition: var(--transition);
 }
 
-.skill-name { font-size: 0.9rem; font-weight: 500; }
-.skill-pct { font-size: 0.8rem; color: var(--accent-light); font-family: var(--font-mono); font-weight: 600; }
-
-.skill-bar {
-  height: 6px;
-  background: var(--border);
-  border-radius: 3px;
-  overflow: hidden;
+.skill-item:hover {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: var(--accent);
 }
 
-.skill-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent) 0%, var(--cyan) 100%);
-  width: 0%;
-  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+.skill-name { font-size: 0.88rem; font-weight: 500; color: var(--text); }
 
 /* ===== VEILLE ===== */
 .veille-grid {

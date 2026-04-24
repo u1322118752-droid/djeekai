@@ -72,6 +72,50 @@ const defaults = {
     github: '',
     cv: '',
     cvNom: ''
+  },
+  site: {
+    metaTitle: 'Portfolio BTS CIO – SISR',
+    navBrand: 'Portfolio',
+    nav: {
+      presentation: 'Présentation',
+      projets: 'Projets',
+      tps: 'TPs',
+      competences: 'Compétences',
+      veille: 'Veille',
+      contact: 'Contact'
+    },
+    sections: {
+      presentation: 'Présentation',
+      projets: 'Projets',
+      tps: 'Travaux Pratiques',
+      competences: 'Compétences',
+      veille: 'Veille Technologique',
+      contact: 'CV & Contact'
+    },
+    presAbout: 'À propos de moi',
+    formation: {
+      specialite: 'Option SISR',
+      annee: '2024 – 2026'
+    },
+    terminal: {
+      fichier: 'whoami.sh',
+      cmd1: 'whoami',
+      cmd2: 'cat formation.txt',
+      rep2: 'BTS CIO option SISR',
+      cmd3: 'cat objectif.txt',
+      rep3: 'Administrateur Système & Réseaux'
+    },
+    hero: {
+      btn1: 'Voir mes projets',
+      btn2: 'Me contacter'
+    },
+    contactSection: {
+      titre: 'Restons en contact',
+      intro: "N'hésitez pas à me contacter pour toute opportunité de stage, alternance ou simplement pour échanger.",
+      cvTitre: 'Mon Curriculum Vitæ',
+      cvDesc: 'Téléchargez mon CV pour en savoir plus sur mon parcours et mes compétences.'
+    },
+    footer: 'Portfolio BTS CIO option SISR'
   }
 };
 
@@ -129,7 +173,8 @@ app.get('/api/data', (req, res) => {
       tps: readData('tps'),
       competences: readData('competences'),
       veille: readData('veille'),
-      contact: readData('contact')
+      contact: readData('contact'),
+      site: readData('site')
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -344,6 +389,27 @@ app.delete('/api/admin/contact/cv', auth, (req, res) => {
   writeData('contact', data);
   res.json({ success: true });
 });
+
+// ===== ADMIN: SITE =====
+
+app.put('/api/admin/site', auth, (req, res) => {
+  const current = readData('site');
+  const updated = mergeDeep(current, req.body);
+  writeData('site', updated);
+  res.json(updated);
+});
+
+function mergeDeep(target, source) {
+  const out = { ...target };
+  for (const key of Object.keys(source)) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      out[key] = mergeDeep(target[key] || {}, source[key]);
+    } else {
+      out[key] = source[key];
+    }
+  }
+  return out;
+}
 
 // ===== ADMIN: MOT DE PASSE =====
 
