@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – Admin Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/admin/css/admin.css" />
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-brand">&lt;<span>Admin</span>/&gt;</span>
+      <button class="sidebar-close" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-title">Vue d'ensemble</span>
+      <button class="sidebar-link active" onclick="showSection('dashboard')">
+        <i class="fa-solid fa-gauge"></i> Tableau de bord
+      </button>
+
+      <span class="nav-section-title">Contenu</span>
+      <button class="sidebar-link" onclick="showSection('presentation')">
+        <i class="fa-solid fa-user"></i> Présentation
+      </button>
+      <button class="sidebar-link" onclick="showSection('projets')">
+        <i class="fa-solid fa-folder"></i> Projets
+      </button>
+      <button class="sidebar-link" onclick="showSection('tps')">
+        <i class="fa-solid fa-flask"></i> Travaux Pratiques
+      </button>
+      <button class="sidebar-link" onclick="showSection('competences')">
+        <i class="fa-solid fa-chart-bar"></i> Compétences
+      </button>
+      <button class="sidebar-link" onclick="showSection('veille')">
+        <i class="fa-solid fa-rss"></i> Veille Technologique
+      </button>
+      <button class="sidebar-link" onclick="showSection('contact')">
+        <i class="fa-solid fa-address-card"></i> CV & Contact
+      </button>
+
+      <span class="nav-section-title">Compte</span>
+      <button class="sidebar-link" onclick="showSection('parametres')">
+        <i class="fa-solid fa-gear"></i> Paramètres
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar"><i class="fa-solid fa-shield"></i></div>
+        <div class="sidebar-user-info">
+          <strong>Administrateur</strong>
+          <small>Connecté</small>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="logout()" style="width:100%; justify-content:center;">
+        <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+        <div>
+          <div class="topbar-title" id="topbar-title">Tableau de bord</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a href="/" target="_blank" class="btn btn-ghost btn-sm">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Voir le portfolio
+        </a>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page-section active" id="section-dashboard">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-gauge"></i> Vue d'ensemble</h2>
+        </div>
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card"><div class="stat-icon blue"><i class="fa-solid fa-folder"></i></div><div class="stat-info"><strong id="stat-projets">0</strong><span>Projets</span></div></div>
+          <div class="stat-card"><div class="stat-icon cyan"><i class="fa-solid fa-flask"></i></div><div class="stat-info"><strong id="stat-tps">0</strong><span>TPs</span></div></div>
+          <div class="stat-card"><div class="stat-icon green"><i class="fa-solid fa-chart-bar"></i></div><div class="stat-info"><strong id="stat-competences">0</strong><span>Compétences</span></div></div>
+          <div class="stat-card"><div class="stat-icon yellow"><i class="fa-solid fa-rss"></i></div><div class="stat-info"><strong id="stat-veille">0</strong><span>Articles veille</span></div></div>
+        </div>
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-circle-info"></i> Guide rapide</span></div>
+          <div class="edit-card-body">
+            <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.7;">
+              Bienvenue dans le panel d'administration de votre portfolio. Utilisez le menu à gauche pour naviguer entre les sections et modifier votre contenu. Les modifications sont enregistrées automatiquement sur le serveur.
+            </p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;">
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px;">
+                <p style="font-size:0.8rem; color:var(--accent-light); font-weight:600; margin-bottom:6px;"><i class="fa-solid fa-file-pdf"></i> Upload PDF</p>
+                <p style="font-size:0.82rem; color:var(--text-muted);">Glissez-déposez vos fichiers PDF dans les zones dédiées des sections Projets et TPs.</p>
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px;">
+                <p style="font-size:0.8rem; color:var(--accent-light); font-weight:600; margin-bottom:6px;"><i class="fa-solid fa-lock"></i> Sécurité</p>
+                <p style="font-size:0.82rem; color:var(--text-muted);">Changez votre mot de passe par défaut dans les Paramètres dès votre première connexion.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PRÉSENTATION ===== -->
+      <div class="page-section" id="section-presentation">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-user"></i> Présentation</h2>
+          <button class="btn btn-primary" onclick="savePresentation()"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+        </div>
+
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-camera"></i> Photo de profil</span></div>
+          <div class="edit-card-body">
+            <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+              <div id="photo-preview-wrapper">
+                <img id="photo-preview" class="photo-preview" src="" alt="Photo" />
+                <div id="photo-placeholder" class="photo-placeholder"><i class="fa-solid fa-user"></i></div>
+              </div>
+              <div style="flex:1; min-width:200px;">
+                <div class="upload-zone" id="photo-upload-zone">
+                  <input type="file" id="photo-input" accept="image/*" onchange="previewAndUploadPhoto(this)" />
+                  <div class="upload-icon"><i class="fa-solid fa-image"></i></div>
+                  <p class="upload-text"><strong>Cliquez ou glissez</strong> une image ici</p>
+                  <p class="upload-hint">JPG, PNG, WebP — max 5 Mo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-id-card"></i> Informations personnelles</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Prénom & Nom</label>
+                <input type="text" class="form-input" id="pres-nom" placeholder="Jean Dupont" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Titre / Poste visé</label>
+                <input type="text" class="form-input" id="pres-titre" placeholder="Étudiant BTS CIO option SISR" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">École / Établissement</label>
+                <input type="text" class="form-input" id="pres-ecole" placeholder="Lycée..." />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Localisation</label>
+                <input type="text" class="form-input" id="pres-localisation" placeholder="Paris, France" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Présentation / Biographie</label>
+              <textarea class="form-textarea" id="pres-description" rows="5" placeholder="Décrivez votre parcours, vos passions, vos ambitions..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PROJETS ===== -->
+      <div class="page-section" id="section-projets">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-folder"></i> Projets</h2>
+          <button class="btn btn-primary" onclick="openAddModal('projet')"><i class="fa-solid fa-plus"></i> Ajouter un projet</button>
+        </div>
+        <div class="items-list" id="projets-list">
+          <p style="text-align:center; color:var(--text-muted); padding:40px;">Aucun projet. Cliquez sur "Ajouter un projet" pour commencer.</p>
+        </div>
+      </div>
+
+      <!-- ===== TPs ===== -->
+      <div class="page-section" id="section-tps">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-flask"></i> Travaux Pratiques</h2>
+          <button class="btn btn-primary" onclick="openAddModal('tp')"><i class="fa-solid fa-plus"></i> Ajouter un TP</button>
+        </div>
+        <div class="items-list" id="tps-list">
+          <p style="text-align:center; color:var(--text-muted); padding:40px;">Aucun TP. Cliquez sur "Ajouter un TP" pour commencer.</p>
+        </div>
+      </div>
+
+      <!-- ===== COMPÉTENCES ===== -->
+      <div class="page-section" id="section-competences">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-chart-bar"></i> Compétences</h2>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-outline" onclick="addCategory()"><i class="fa-solid fa-plus"></i> Catégorie</button>
+            <button class="btn btn-primary" onclick="saveCompetences()"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+          </div>
+        </div>
+        <div class="skills-admin" id="skills-admin">
+          <!-- Built by JS -->
+        </div>
+      </div>
+
+      <!-- ===== VEILLE ===== -->
+      <div class="page-section" id="section-veille">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-rss"></i> Veille Technologique</h2>
+          <button class="btn btn-primary" onclick="openAddModal('veille')"><i class="fa-solid fa-plus"></i> Ajouter un article</button>
+        </div>
+        <div class="items-list" id="veille-list">
+          <p style="text-align:center; color:var(--text-muted); padding:40px;">Aucun article. Cliquez sur "Ajouter un article" pour commencer.</p>
+        </div>
+      </div>
+
+      <!-- ===== CONTACT ===== -->
+      <div class="page-section" id="section-contact">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-address-card"></i> CV & Contact</h2>
+          <button class="btn btn-primary" onclick="saveContact()"><i class="fa-solid fa-floppy-disk"></i> Enregistrer</button>
+        </div>
+
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-file-pdf"></i> Curriculum Vitæ (PDF)</span></div>
+          <div class="edit-card-body">
+            <div id="cv-current-info"></div>
+            <div class="upload-zone" id="cv-upload-zone">
+              <input type="file" id="cv-input" accept=".pdf" onchange="uploadCV(this)" />
+              <div class="upload-icon"><i class="fa-solid fa-file-pdf"></i></div>
+              <p class="upload-text"><strong>Cliquez ou glissez</strong> votre CV ici</p>
+              <p class="upload-hint">Fichier PDF uniquement — max 10 Mo</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="edit-card">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-phone"></i> Coordonnées</span></div>
+          <div class="edit-card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Adresse email</label>
+                <input type="email" class="form-input" id="contact-email" placeholder="email@exemple.com" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Téléphone</label>
+                <input type="tel" class="form-input" id="contact-telephone" placeholder="+33 6 00 00 00 00" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">URL LinkedIn</label>
+                <input type="url" class="form-input" id="contact-linkedin" placeholder="https://linkedin.com/in/..." />
+              </div>
+              <div class="form-group">
+                <label class="form-label">URL GitHub</label>
+                <input type="url" class="form-input" id="contact-github" placeholder="https://github.com/..." />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PARAMÈTRES ===== -->
+      <div class="page-section" id="section-parametres">
+        <div class="panel-header">
+          <h2 class="panel-title"><i class="fa-solid fa-gear"></i> Paramètres</h2>
+        </div>
+        <div class="edit-card" style="max-width:480px;">
+          <div class="edit-card-header"><span class="edit-card-title"><i class="fa-solid fa-lock"></i> Changer le mot de passe</span></div>
+          <div class="edit-card-body">
+            <div class="form-group">
+              <label class="form-label">Mot de passe actuel</label>
+              <input type="password" class="form-input" id="pw-current" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nouveau mot de passe</label>
+              <input type="password" class="form-input" id="pw-new" placeholder="••••••••" />
+              <span class="form-hint">Minimum 6 caractères</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmer le nouveau mot de passe</label>
+              <input type="password" class="form-input" id="pw-confirm" placeholder="••••••••" />
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()">
+              <i class="fa-solid fa-key"></i> Changer le mot de passe
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-content -->
+</div><!-- /admin-layout -->
+
+<!-- MODAL ADD/EDIT -->
+<div class="modal-overlay" id="modal" style="display:none;" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Nouveau projet</span>
+      <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()">
+        <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/admin/js/admin.js"></script>
+</body>
+</html>

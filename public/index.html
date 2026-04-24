@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio BTS CIO – SISR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#accueil" class="nav-brand">
+        <span class="brand-bracket">&lt;</span>Portfolio<span class="brand-bracket">/&gt;</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#presentation" class="nav-link">Présentation</a></li>
+        <li><a href="#projets" class="nav-link">Projets</a></li>
+        <li><a href="#tps" class="nav-link">TPs</a></li>
+        <li><a href="#competences" class="nav-link">Compétences</a></li>
+        <li><a href="#veille" class="nav-link">Veille</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+        <li><a href="/admin" class="nav-link nav-admin" title="Panel admin"><i class="fa-solid fa-lock"></i></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="accueil">
+    <div class="hero-bg">
+      <div class="hero-grid"></div>
+      <div class="hero-glow"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span id="hero-ecole">BTS CIO option SISR</span>
+      </div>
+      <div class="hero-photo-wrapper" id="hero-photo-wrapper">
+        <img src="" alt="Photo de profil" class="hero-photo" id="hero-photo" />
+        <div class="hero-photo-placeholder" id="hero-photo-placeholder">
+          <i class="fa-solid fa-user"></i>
+        </div>
+      </div>
+      <h1 class="hero-name" id="hero-nom">Prénom Nom</h1>
+      <p class="hero-titre" id="hero-titre">Étudiant BTS CIO option SISR</p>
+      <p class="hero-desc" id="hero-desc">Passionné par les infrastructures réseaux, la cybersécurité et les systèmes.</p>
+      <div class="hero-location" id="hero-location">
+        <i class="fa-solid fa-location-dot"></i>
+        <span id="hero-localisation">Ville, France</span>
+      </div>
+      <div class="hero-actions">
+        <a href="#projets" class="btn btn-primary">Voir mes projets</a>
+        <a href="#contact" class="btn btn-outline">Me contacter</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
+    </div>
+  </section>
+
+  <!-- PRÉSENTATION -->
+  <section class="section" id="presentation">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">01</span>
+        <h2 class="section-title">Présentation</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="presentation-grid">
+        <div class="presentation-text fade-in">
+          <h3>À propos de moi</h3>
+          <p id="pres-description">Chargement...</p>
+          <div class="pres-info-grid" id="pres-info-grid">
+            <div class="info-item"><i class="fa-solid fa-school"></i><span id="pres-ecole"></span></div>
+            <div class="info-item"><i class="fa-solid fa-location-dot"></i><span id="pres-localisation"></span></div>
+            <div class="info-item"><i class="fa-solid fa-network-wired"></i><span>Option SISR</span></div>
+            <div class="info-item"><i class="fa-solid fa-calendar"></i><span id="pres-annee">2024 – 2026</span></div>
+          </div>
+        </div>
+        <div class="presentation-card fade-in">
+          <div class="terminal-window">
+            <div class="terminal-header">
+              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+              <span class="terminal-title">whoami.sh</span>
+            </div>
+            <div class="terminal-body" id="terminal-body">
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">whoami</span></div>
+              <div class="terminal-line t-output" id="t-nom">→ Chargement...</div>
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">cat formation.txt</span></div>
+              <div class="terminal-line t-output">→ BTS CIO option SISR</div>
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">cat objectif.txt</span></div>
+              <div class="terminal-line t-output">→ Administrateur Système & Réseaux</div>
+              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd blink">_</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJETS -->
+  <section class="section section-alt" id="projets">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">02</span>
+        <h2 class="section-title">Projets</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="cards-grid" id="projets-grid">
+        <div class="empty-state">
+          <i class="fa-solid fa-folder-open"></i>
+          <p>Aucun projet pour le moment</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TPs -->
+  <section class="section" id="tps">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">03</span>
+        <h2 class="section-title">Travaux Pratiques</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="cards-grid" id="tps-grid">
+        <div class="empty-state">
+          <i class="fa-solid fa-flask"></i>
+          <p>Aucun TP pour le moment</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPÉTENCES -->
+  <section class="section section-alt" id="competences">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">04</span>
+        <h2 class="section-title">Compétences</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="competences-wrapper" id="competences-wrapper">
+        <p class="loading-text">Chargement...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VEILLE -->
+  <section class="section" id="veille">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">05</span>
+        <h2 class="section-title">Veille Technologique</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="veille-grid" id="veille-grid">
+        <div class="empty-state">
+          <i class="fa-solid fa-rss"></i>
+          <p>Aucun article de veille pour le moment</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section section-alt" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">06</span>
+        <h2 class="section-title">CV & Contact</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="contact-wrapper">
+        <div class="contact-info fade-in">
+          <h3>Restons en contact</h3>
+          <p class="contact-intro">N'hésitez pas à me contacter pour toute opportunité de stage, alternance ou simplement pour échanger.</p>
+          <div class="contact-items" id="contact-items">
+            <!-- Filled by JS -->
+          </div>
+          <div class="contact-socials" id="contact-socials">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+        <div class="contact-cv fade-in" id="contact-cv-wrapper">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>Portfolio BTS CIO option SISR &mdash; <span id="footer-nom">Étudiant</span></p>
+      <p class="footer-sub">
+        <a href="/admin" class="footer-admin"><i class="fa-solid fa-lock"></i> Administration</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
