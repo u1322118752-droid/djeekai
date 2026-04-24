@@ -5,21 +5,9 @@
       "nom": "Réseaux",
       "icone": "fa-network-wired",
       "competences": [
-        {
-          "id": 1,
-          "nom": "TCP/IP & Routage",
-          "niveau": 80
-        },
-        {
-          "id": 2,
-          "nom": "VLAN & Switching",
-          "niveau": 75
-        },
-        {
-          "id": 3,
-          "nom": "Cisco IOS",
-          "niveau": 70
-        }
+        { "id": 1, "nom": "TCP/IP & Routage" },
+        { "id": 2, "nom": "VLAN & Switching" },
+        { "id": 3, "nom": "Cisco IOS" }
       ]
     },
     {
@@ -27,21 +15,9 @@
       "nom": "Systèmes",
       "icone": "fa-server",
       "competences": [
-        {
-          "id": 4,
-          "nom": "Windows Server",
-          "niveau": 80
-        },
-        {
-          "id": 5,
-          "nom": "Linux (Debian/Ubuntu)",
-          "niveau": 75
-        },
-        {
-          "id": 6,
-          "nom": "Active Directory",
-          "niveau": 70
-        }
+        { "id": 4, "nom": "Windows Server" },
+        { "id": 5, "nom": "Linux (Debian/Ubuntu)" },
+        { "id": 6, "nom": "Active Directory" }
       ]
     },
     {
@@ -49,21 +25,9 @@
       "nom": "Sécurité",
       "icone": "fa-shield-halved",
       "competences": [
-        {
-          "id": 7,
-          "nom": "Pare-feu / Filtrage",
-          "niveau": 65
-        },
-        {
-          "id": 8,
-          "nom": "VPN",
-          "niveau": 70
-        },
-        {
-          "id": 9,
-          "nom": "Audit de sécurité",
-          "niveau": 55
-        }
+        { "id": 7, "nom": "Pare-feu / Filtrage" },
+        { "id": 8, "nom": "VPN" },
+        { "id": 9, "nom": "Audit de sécurité" }
       ]
     }
   ]

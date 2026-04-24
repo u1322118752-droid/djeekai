@@ -652,7 +652,7 @@ function removeCategory(ci) {
 
 function addSkill(ci) {
   if (!competencesState[ci].competences) competencesState[ci].competences = [];
-  competencesState[ci].competences.push({ id: Date.now(), nom: '', niveau: 70 });
+  competencesState[ci].competences.push({ id: Date.now(), nom: '' });
   renderCompetencesAdmin();
 }
 
