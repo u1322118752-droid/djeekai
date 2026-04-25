@@ -3,22 +3,23 @@ const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
-const fs = require('fs');
 const mongoose = require('mongoose');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'portfolio-bts-sisr-secret-2024';
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://djeekai:T_u44DqQ-pYrvdf@cluster0.nbkxfow.mongodb.net/?appName=Cluster0';
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Create upload directories
-['uploads/projets', 'uploads/tps', 'uploads/cv', 'uploads/presentation', 'uploads/veille'].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-});
 
 // MongoDB model
 const Setting = mongoose.model('Setting', new mongoose.Schema({
@@ -32,6 +33,7 @@ const defaults = {
     titre: 'Étudiant BTS CIO option SISR',
     description: 'Passionné par les infrastructures réseaux, la cybersécurité et les systèmes. En formation BTS CIO option SISR, je développe des compétences solides en administration système et réseaux.',
     photo: '',
+    photoPublicId: '',
     localisation: 'Ville, France',
     ecole: 'Lycée / CFA'
   },
@@ -78,7 +80,8 @@ const defaults = {
     linkedin: '',
     github: '',
     cv: '',
-    cvNom: ''
+    cvNom: '',
+    cvPublicId: ''
   },
   site: {
     metaTitle: 'Portfolio BTS CIO – SISR',
@@ -136,9 +139,39 @@ const writeData = async (key, value) => {
   await Setting.findOneAndUpdate({ key }, { value }, { upsert: true, new: true });
 };
 
-const deleteFile = (filePath) => {
-  if (filePath && fs.existsSync(`.${filePath}`)) fs.unlinkSync(`.${filePath}`);
+const deleteCloudinaryFile = async (publicId, resourceType = 'image') => {
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+  } catch (e) {
+    console.error('Cloudinary delete error:', e.message);
+  }
 };
+
+// Multer + Cloudinary storages
+const mkImageUpload = (folder) => multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: { folder: `portfolio/${folder}`, allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'] }
+  }),
+  fileFilter: (_, file, cb) => ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype) ? cb(null, true) : cb(new Error('Type non accepté')),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
+const mkPDFUpload = (folder) => multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: { folder: `portfolio/${folder}`, resource_type: 'raw', allowed_formats: ['pdf'] }
+  }),
+  fileFilter: (_, file, cb) => file.mimetype === 'application/pdf' ? cb(null, true) : cb(new Error('Type non accepté')),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
+const upPDF = mkPDFUpload('projets');
+const upTPDF = mkPDFUpload('tps');
+const upCVPDF = mkPDFUpload('cv');
+const upPhoto = mkImageUpload('presentation');
+const upVeille = mkImageUpload('veille');
 
 // Auth middleware
 const auth = (req, res, next) => {
@@ -151,22 +184,6 @@ const auth = (req, res, next) => {
     res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 };
-
-// Multer factory
-const mkUpload = (folder, types) => multer({
-  storage: multer.diskStorage({
-    destination: (_, __, cb) => cb(null, `uploads/${folder}`),
-    filename: (_, file, cb) => cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`)
-  }),
-  fileFilter: (_, file, cb) => types.includes(file.mimetype) ? cb(null, true) : cb(new Error('Type de fichier non accepté')),
-  limits: { fileSize: 10 * 1024 * 1024 }
-});
-
-const upPDF = mkUpload('projets', ['application/pdf']);
-const upTPDF = mkUpload('tps', ['application/pdf']);
-const upCVPDF = mkUpload('cv', ['application/pdf']);
-const upPhoto = mkUpload('presentation', ['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
-const upVeille = mkUpload('veille', ['image/jpeg', 'image/png', 'image/webp']);
 
 // ===== PUBLIC API =====
 
@@ -213,8 +230,9 @@ app.put('/api/admin/presentation', auth, async (req, res) => {
 app.post('/api/admin/presentation/photo', auth, upPhoto.single('photo'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('presentation');
-  deleteFile(data.photo);
-  data.photo = `/uploads/presentation/${req.file.filename}`;
+  await deleteCloudinaryFile(data.photoPublicId, 'image');
+  data.photo = req.file.path;
+  data.photoPublicId = req.file.filename;
   await writeData('presentation', data);
   res.json({ photo: data.photo });
 });
@@ -223,7 +241,7 @@ app.post('/api/admin/presentation/photo', auth, upPhoto.single('photo'), async (
 
 app.post('/api/admin/projets', auth, async (req, res) => {
   const data = await readData('projets');
-  const item = { id: Date.now(), titre: '', description: '', technologies: [], pdf: '', pdfNom: '', date: new Date().toISOString().split('T')[0], ...req.body };
+  const item = { id: Date.now(), titre: '', description: '', technologies: [], pdf: '', pdfNom: '', pdfPublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
   data.items.push(item);
   await writeData('projets', data);
   res.json(item);
@@ -242,7 +260,7 @@ app.delete('/api/admin/projets/:id', auth, async (req, res) => {
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  deleteFile(data.items[idx].pdf);
+  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
   data.items.splice(idx, 1);
   await writeData('projets', data);
   res.json({ success: true });
@@ -253,9 +271,10 @@ app.post('/api/admin/projets/:id/pdf', auth, upPDF.single('pdf'), async (req, re
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  deleteFile(data.items[idx].pdf);
-  data.items[idx].pdf = `/uploads/projets/${req.file.filename}`;
+  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
+  data.items[idx].pdf = req.file.path;
   data.items[idx].pdfNom = req.file.originalname;
+  data.items[idx].pdfPublicId = req.file.filename;
   await writeData('projets', data);
   res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
 });
@@ -264,9 +283,10 @@ app.delete('/api/admin/projets/:id/pdf', auth, async (req, res) => {
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  deleteFile(data.items[idx].pdf);
+  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
   data.items[idx].pdf = '';
   data.items[idx].pdfNom = '';
+  data.items[idx].pdfPublicId = '';
   await writeData('projets', data);
   res.json({ success: true });
 });
@@ -275,7 +295,7 @@ app.delete('/api/admin/projets/:id/pdf', auth, async (req, res) => {
 
 app.post('/api/admin/tps', auth, async (req, res) => {
   const data = await readData('tps');
-  const item = { id: Date.now(), titre: '', description: '', objectif: '', pdf: '', pdfNom: '', date: new Date().toISOString().split('T')[0], ...req.body };
+  const item = { id: Date.now(), titre: '', description: '', objectif: '', pdf: '', pdfNom: '', pdfPublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
   data.items.push(item);
   await writeData('tps', data);
   res.json(item);
@@ -294,7 +314,7 @@ app.delete('/api/admin/tps/:id', auth, async (req, res) => {
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  deleteFile(data.items[idx].pdf);
+  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
   data.items.splice(idx, 1);
   await writeData('tps', data);
   res.json({ success: true });
@@ -305,9 +325,10 @@ app.post('/api/admin/tps/:id/pdf', auth, upTPDF.single('pdf'), async (req, res) 
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  deleteFile(data.items[idx].pdf);
-  data.items[idx].pdf = `/uploads/tps/${req.file.filename}`;
+  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
+  data.items[idx].pdf = req.file.path;
   data.items[idx].pdfNom = req.file.originalname;
+  data.items[idx].pdfPublicId = req.file.filename;
   await writeData('tps', data);
   res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
 });
@@ -316,9 +337,10 @@ app.delete('/api/admin/tps/:id/pdf', auth, async (req, res) => {
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  deleteFile(data.items[idx].pdf);
+  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
   data.items[idx].pdf = '';
   data.items[idx].pdfNom = '';
+  data.items[idx].pdfPublicId = '';
   await writeData('tps', data);
   res.json({ success: true });
 });
@@ -334,7 +356,7 @@ app.put('/api/admin/competences', auth, async (req, res) => {
 
 app.post('/api/admin/veille', auth, async (req, res) => {
   const data = await readData('veille');
-  const item = { id: Date.now(), titre: '', resume: '', source: '', lien: '', image: '', date: new Date().toISOString().split('T')[0], ...req.body };
+  const item = { id: Date.now(), titre: '', resume: '', source: '', lien: '', image: '', imagePublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
   data.items.push(item);
   await writeData('veille', data);
   res.json(item);
@@ -353,7 +375,7 @@ app.delete('/api/admin/veille/:id', auth, async (req, res) => {
   const data = await readData('veille');
   const idx = data.items.findIndex(v => v.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Article non trouvé' });
-  deleteFile(data.items[idx].image);
+  await deleteCloudinaryFile(data.items[idx].imagePublicId, 'image');
   data.items.splice(idx, 1);
   await writeData('veille', data);
   res.json({ success: true });
@@ -364,8 +386,9 @@ app.post('/api/admin/veille/:id/image', auth, upVeille.single('image'), async (r
   const data = await readData('veille');
   const idx = data.items.findIndex(v => v.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Article non trouvé' });
-  deleteFile(data.items[idx].image);
-  data.items[idx].image = `/uploads/veille/${req.file.filename}`;
+  await deleteCloudinaryFile(data.items[idx].imagePublicId, 'image');
+  data.items[idx].image = req.file.path;
+  data.items[idx].imagePublicId = req.file.filename;
   await writeData('veille', data);
   res.json({ image: data.items[idx].image });
 });
@@ -381,18 +404,20 @@ app.put('/api/admin/contact', auth, async (req, res) => {
 app.post('/api/admin/contact/cv', auth, upCVPDF.single('cv'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('contact');
-  deleteFile(data.cv);
-  data.cv = `/uploads/cv/${req.file.filename}`;
+  await deleteCloudinaryFile(data.cvPublicId, 'raw');
+  data.cv = req.file.path;
   data.cvNom = req.file.originalname;
+  data.cvPublicId = req.file.filename;
   await writeData('contact', data);
   res.json({ cv: data.cv, cvNom: data.cvNom });
 });
 
 app.delete('/api/admin/contact/cv', auth, async (req, res) => {
   const data = await readData('contact');
-  deleteFile(data.cv);
+  await deleteCloudinaryFile(data.cvPublicId, 'raw');
   data.cv = '';
   data.cvNom = '';
+  data.cvPublicId = '';
   await writeData('contact', data);
   res.json({ success: true });
 });
