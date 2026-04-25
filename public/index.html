@@ -15,7 +15,7 @@
   <nav class="navbar" id="navbar">
     <div class="nav-container">
       <a href="#accueil" class="nav-brand">
-        <span class="brand-bracket">&lt;</span><span id="nav-brand-text">Portfolio</span><span class="brand-bracket">/&gt;</span>
+        <span id="nav-brand-text">Portfolio</span>
       </a>
       <button class="nav-toggle" id="navToggle" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -86,19 +86,32 @@
           </div>
         </div>
         <div class="presentation-card fade-in">
-          <div class="terminal-window">
-            <div class="terminal-header">
-              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-              <span class="terminal-title" id="t-fichier">whoami.sh</span>
+          <div class="info-card">
+            <div class="info-card-header">
+              <i class="fa-solid fa-id-badge"></i>
+              <span>Fiche de profil</span>
             </div>
-            <div class="terminal-body" id="terminal-body">
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd" id="t-cmd1">whoami</span></div>
-              <div class="terminal-line t-output" id="t-nom">→ Chargement...</div>
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd" id="t-cmd2">cat formation.txt</span></div>
-              <div class="terminal-line t-output" id="t-rep2">→ BTS CIO option SISR</div>
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd" id="t-cmd3">cat objectif.txt</span></div>
-              <div class="terminal-line t-output" id="t-rep3">→ Administrateur Système & Réseaux</div>
-              <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd blink">_</span></div>
+            <div class="info-card-body">
+              <div class="info-card-row">
+                <span class="info-card-label"><i class="fa-solid fa-user"></i> Nom</span>
+                <span class="info-card-value" id="t-nom">—</span>
+              </div>
+              <div class="info-card-row">
+                <span class="info-card-label"><i class="fa-solid fa-graduation-cap"></i> Formation</span>
+                <span class="info-card-value" id="t-rep2">BTS CIO option SISR</span>
+              </div>
+              <div class="info-card-row">
+                <span class="info-card-label"><i class="fa-solid fa-bullseye"></i> Objectif</span>
+                <span class="info-card-value" id="t-rep3">Administrateur Sys. & Réseaux</span>
+              </div>
+              <div class="info-card-row">
+                <span class="info-card-label"><i class="fa-solid fa-calendar"></i> Période</span>
+                <span class="info-card-value" id="t-annee">2024 – 2026</span>
+              </div>
+              <div class="info-card-row">
+                <span class="info-card-label"><i class="fa-solid fa-location-dot"></i> Lieu</span>
+                <span class="info-card-value" id="t-localisation">—</span>
+              </div>
             </div>
           </div>
         </div>

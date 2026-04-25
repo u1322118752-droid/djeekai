@@ -104,14 +104,13 @@ function renderSite(s) {
     set('pres-annee', s.formation.annee);
   }
 
-  // Terminal
+  // Info card
   if (s.terminal) {
-    set('t-fichier', s.terminal.fichier);
-    set('t-cmd1', s.terminal.cmd1);
-    set('t-cmd2', s.terminal.cmd2);
-    set('t-rep2', `→ ${s.terminal.rep2}`);
-    set('t-cmd3', s.terminal.cmd3);
-    set('t-rep3', `→ ${s.terminal.rep3}`);
+    set('t-rep2', s.terminal.rep2);
+    set('t-rep3', s.terminal.rep3);
+  }
+  if (s.formation) {
+    set('t-annee', s.formation.annee);
   }
 
   // Hero buttons
@@ -157,7 +156,8 @@ function renderPresentation(data) {
   document.getElementById('pres-localisation').textContent = data.localisation || '';
 
   // Terminal
-  document.getElementById('t-nom').textContent = `→ ${data.nom || 'Étudiant'}`;
+  document.getElementById('t-nom').textContent = data.nom || '—';
+  document.getElementById('t-localisation').textContent = data.localisation || '—';
 
   // Page title
   document.title = `${data.nom || 'Portfolio'} – BTS CIO SISR`;
