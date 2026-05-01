@@ -183,12 +183,6 @@ function renderTPs(items) {
   grid.querySelectorAll('.card').forEach(el => observer.observe(el));
 }
 
-function pdfDownloadUrl(url, filename) {
-  if (!url) return '';
-  const safe = (filename || 'document.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
-  return url.replace(/\/raw\/upload\//, `/raw/upload/fl_attachment:${safe}/`);
-}
-
 function normalizeUrl(url) {
   if (!url) return '';
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -201,9 +195,15 @@ function cardHTML(item, type) {
 
   const tags = (item.technologies || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const objectif = item.objectif ? `<p class="card-objectif"><i class="fa-solid fa-bullseye"></i> ${esc(item.objectif)}</p>` : '';
-  const pdfBtn = item.pdf
-    ? `<a href="${pdfDownloadUrl(item.pdf, item.pdfNom)}" download="${esc(item.pdfNom || 'document.pdf')}" class="btn-pdf"><i class="fa-solid fa-file-pdf"></i>${esc(item.pdfNom || 'Document PDF')}</a>`
-    : '';
+  const pdfFooter = item.pdf ? `
+    <div class="card-footer">
+      <a href="${item.pdf}" target="_blank" rel="noopener" class="btn-pdf">
+        <i class="fa-solid fa-eye"></i> Voir
+      </a>
+      <a href="/api/pdf-download?url=${encodeURIComponent(item.pdf)}&filename=${encodeURIComponent(item.pdfNom || 'document.pdf')}" class="btn-pdf btn-pdf-dl">
+        <i class="fa-solid fa-download"></i> Télécharger
+      </a>
+    </div>` : '';
 
   return `
     <div class="card fade-in">
@@ -217,7 +217,7 @@ function cardHTML(item, type) {
         ${objectif}
       </div>
       ${tags ? `<div class="card-tags">${tags}</div>` : ''}
-      ${pdfBtn ? `<div class="card-footer">${pdfBtn}</div>` : ''}
+      ${pdfFooter}
     </div>
   `;
 }

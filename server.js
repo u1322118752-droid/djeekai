@@ -187,6 +187,24 @@ const auth = (req, res, next) => {
   }
 };
 
+// ===== PDF PROXY =====
+
+app.get('/api/pdf-download', async (req, res) => {
+  let { url, filename } = req.query;
+  if (!url) return res.status(400).send('URL manquante');
+  try { url = decodeURIComponent(url); } catch { return res.status(400).send('URL invalide'); }
+  if (!url.startsWith('https://res.cloudinary.com/')) return res.status(403).send('URL non autorisée');
+
+  const safe = (filename ? decodeURIComponent(filename) : 'document.pdf').replace(/[^\w.\- ]/g, '_');
+  const https = require('https');
+  const req2 = https.get(url, (upstream) => {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${safe}"`);
+    upstream.pipe(res);
+  });
+  req2.on('error', () => res.status(500).send('Erreur de téléchargement'));
+});
+
 // ===== PUBLIC API =====
 
 app.get('/api/data', async (req, res) => {
