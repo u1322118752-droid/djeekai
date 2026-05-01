@@ -34,10 +34,6 @@ const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('visible');
-      // Animate skill bars when competences section is visible
-      if (entry.target.closest('#competences')) {
-        animateSkillBars();
-      }
     }
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });

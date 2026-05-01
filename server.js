@@ -221,12 +221,15 @@ app.get('/api/pdf', async (req, res) => {
   const disposition = mode === 'view' ? 'inline' : 'attachment';
 
   try {
+    console.log('PDF proxy fetch:', url);
     const response = await fetch(url);
+    console.log('PDF proxy status:', response.status);
     if (!response.ok) return res.status(404).send('Fichier introuvable');
+    const buffer = Buffer.from(await response.arrayBuffer());
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
-    const { Readable } = require('stream');
-    Readable.from(response.body).pipe(res);
+    res.setHeader('Content-Length', buffer.length);
+    res.end(buffer);
   } catch (err) {
     console.error('PDF proxy error:', err);
     res.status(500).send('Erreur proxy PDF');
