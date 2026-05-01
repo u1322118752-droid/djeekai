@@ -163,9 +163,13 @@ const mkImageUpload = (folder) => multer({
 const mkPDFUpload = (folder) => multer({
   storage: new CloudinaryStorage({
     cloudinary,
-    params: { folder: `portfolio/${folder}`, resource_type: 'raw', allowed_formats: ['pdf'] }
+    params: async (req, file) => ({
+      folder: `portfolio/${folder}`,
+      resource_type: 'raw',
+      public_id: `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+    })
   }),
-  fileFilter: (_, file, cb) => file.mimetype === 'application/pdf' ? cb(null, true) : cb(new Error('Type non accepté')),
+  fileFilter: (_, file, cb) => file.mimetype === 'application/pdf' ? cb(null, true) : cb(new Error('Seuls les fichiers PDF sont acceptés')),
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
@@ -174,6 +178,14 @@ const upTPDF = mkPDFUpload('tps');
 const upCVPDF = mkPDFUpload('cv');
 const upPhoto = mkImageUpload('presentation');
 const upVeille = mkImageUpload('veille');
+
+// Multer error wrapper — retourne une réponse JSON au lieu de HTML
+const upload = (middleware) => (req, res, next) => {
+  middleware(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'Erreur upload' });
+    next();
+  });
+};
 
 // Auth middleware
 const auth = (req, res, next) => {
@@ -251,7 +263,7 @@ app.put('/api/admin/presentation', auth, async (req, res) => {
   res.json(data);
 });
 
-app.post('/api/admin/presentation/photo', auth, upPhoto.single('photo'), async (req, res) => {
+app.post('/api/admin/presentation/photo', auth, upload(upPhoto.single('photo')), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('presentation');
   await deleteCloudinaryFile(data.photoPublicId, 'image');
@@ -290,7 +302,7 @@ app.delete('/api/admin/projets/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/admin/projets/:id/pdf', auth, upPDF.single('pdf'), async (req, res) => {
+app.post('/api/admin/projets/:id/pdf', auth, upload(upPDF.single('pdf')), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
@@ -344,7 +356,7 @@ app.delete('/api/admin/tps/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/admin/tps/:id/pdf', auth, upTPDF.single('pdf'), async (req, res) => {
+app.post('/api/admin/tps/:id/pdf', auth, upload(upTPDF.single('pdf')), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
@@ -405,7 +417,7 @@ app.delete('/api/admin/veille/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/admin/veille/:id/image', auth, upVeille.single('image'), async (req, res) => {
+app.post('/api/admin/veille/:id/image', auth, upload(upVeille.single('image')), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('veille');
   const idx = data.items.findIndex(v => v.id == req.params.id);
@@ -425,7 +437,7 @@ app.put('/api/admin/contact', auth, async (req, res) => {
   res.json(data);
 });
 
-app.post('/api/admin/contact/cv', auth, upCVPDF.single('cv'), async (req, res) => {
+app.post('/api/admin/contact/cv', auth, upload(upCVPDF.single('cv')), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
   const data = await readData('contact');
   await deleteCloudinaryFile(data.cvPublicId, 'raw');
