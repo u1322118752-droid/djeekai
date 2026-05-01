@@ -189,20 +189,24 @@ const auth = (req, res, next) => {
 
 // ===== PDF PROXY =====
 
-app.get('/api/pdf-download', async (req, res) => {
-  let { url, filename } = req.query;
+app.get('/api/pdf', async (req, res) => {
+  let { url, filename, mode } = req.query;
   if (!url) return res.status(400).send('URL manquante');
   try { url = decodeURIComponent(url); } catch { return res.status(400).send('URL invalide'); }
   if (!url.startsWith('https://res.cloudinary.com/')) return res.status(403).send('URL non autorisée');
 
-  const safe = (filename ? decodeURIComponent(filename) : 'document.pdf').replace(/[^\w.\- ]/g, '_');
+  let name = filename ? decodeURIComponent(filename) : 'document.pdf';
+  if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
+  const safe = name.replace(/[^\w.\- ]/g, '_');
+  const disposition = mode === 'view' ? 'inline' : 'attachment';
+
   const https = require('https');
-  const req2 = https.get(url, (upstream) => {
+  const proxyReq = https.get(url, (upstream) => {
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${safe}"`);
+    res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
     upstream.pipe(res);
   });
-  req2.on('error', () => res.status(500).send('Erreur de téléchargement'));
+  proxyReq.on('error', () => res.status(500).send('Erreur proxy PDF'));
 });
 
 // ===== PUBLIC API =====

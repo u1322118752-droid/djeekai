@@ -195,12 +195,13 @@ function cardHTML(item, type) {
 
   const tags = (item.technologies || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const objectif = item.objectif ? `<p class="card-objectif"><i class="fa-solid fa-bullseye"></i> ${esc(item.objectif)}</p>` : '';
+  const pdfBase = item.pdf ? `/api/pdf?url=${encodeURIComponent(item.pdf)}&filename=${encodeURIComponent(item.pdfNom || 'document.pdf')}` : '';
   const pdfFooter = item.pdf ? `
     <div class="card-footer">
-      <a href="${item.pdf}" target="_blank" rel="noopener" class="btn-pdf">
+      <a href="${pdfBase}&mode=view" target="_blank" rel="noopener" class="btn-pdf">
         <i class="fa-solid fa-eye"></i> Voir
       </a>
-      <a href="/api/pdf-download?url=${encodeURIComponent(item.pdf)}&filename=${encodeURIComponent(item.pdfNom || 'document.pdf')}" class="btn-pdf btn-pdf-dl">
+      <a href="${pdfBase}" class="btn-pdf btn-pdf-dl">
         <i class="fa-solid fa-download"></i> Télécharger
       </a>
     </div>` : '';
