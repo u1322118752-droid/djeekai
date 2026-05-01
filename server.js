@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
@@ -177,9 +178,9 @@ const uploadPDFToCloudinary = (buffer, folder, originalname) => new Promise((res
   Readable.from(buffer).pipe(stream);
 });
 
-const upPDF = upload(pdfMemory.single('pdf'));
-const upTPDF = upload(pdfMemory.single('pdf'));
-const upCVPDF = upload(pdfMemory.single('cv'));
+const upPDF = pdfMemory.single('pdf');
+const upTPDF = pdfMemory.single('pdf');
+const upCVPDF = pdfMemory.single('cv');
 const upPhoto = mkImageUpload('presentation');
 const upVeille = mkImageUpload('veille');
 
