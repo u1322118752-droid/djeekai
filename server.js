@@ -220,13 +220,17 @@ app.get('/api/pdf', async (req, res) => {
   const safe = name.replace(/[^\w.\- ]/g, '_');
   const disposition = mode === 'view' ? 'inline' : 'attachment';
 
-  const https = require('https');
-  const proxyReq = https.get(url, (upstream) => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return res.status(404).send('Fichier introuvable');
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
-    upstream.pipe(res);
-  });
-  proxyReq.on('error', () => res.status(500).send('Erreur proxy PDF'));
+    const { Readable } = require('stream');
+    Readable.from(response.body).pipe(res);
+  } catch (err) {
+    console.error('PDF proxy error:', err);
+    res.status(500).send('Erreur proxy PDF');
+  }
 });
 
 // ===== PUBLIC API =====

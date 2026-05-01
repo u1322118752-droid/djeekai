@@ -220,6 +220,17 @@
     </div>
   </footer>
 
-  <script src="/js/main.js?v=4"></script>
+  <!-- PDF Modal -->
+  <div id="pdf-modal" class="pdf-modal-overlay" onclick="closePdfModalOverlay(event)">
+    <div class="pdf-modal-box">
+      <div class="pdf-modal-header">
+        <span id="pdf-modal-title" class="pdf-modal-title"></span>
+        <button class="pdf-modal-close" onclick="closePdfModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <iframe id="pdf-modal-frame" src="" class="pdf-modal-frame"></iframe>
+    </div>
+  </div>
+
+  <script src="/js/main.js?v=5"></script>
 </body>
 </html>

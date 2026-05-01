@@ -195,13 +195,15 @@ function cardHTML(item, type) {
 
   const tags = (item.technologies || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const objectif = item.objectif ? `<p class="card-objectif"><i class="fa-solid fa-bullseye"></i> ${esc(item.objectif)}</p>` : '';
-  const pdfBase = item.pdf ? `/api/pdf?url=${encodeURIComponent(item.pdf)}&filename=${encodeURIComponent(item.pdfNom || 'document.pdf')}` : '';
   const pdfFooter = item.pdf ? `
     <div class="card-footer">
-      <a href="${pdfBase}&mode=view" target="_blank" rel="noopener" class="btn-pdf">
+      <button class="btn-pdf"
+        data-url="${esc(item.pdf)}"
+        data-filename="${esc(item.pdfNom || 'document.pdf')}"
+        onclick="openPdfModal(this)">
         <i class="fa-solid fa-eye"></i> Voir
-      </a>
-      <a href="${pdfBase}" class="btn-pdf btn-pdf-dl">
+      </button>
+      <a href="/api/pdf?url=${encodeURIComponent(item.pdf)}&filename=${encodeURIComponent(item.pdfNom || 'document.pdf')}" class="btn-pdf btn-pdf-dl">
         <i class="fa-solid fa-download"></i> Télécharger
       </a>
     </div>` : '';
@@ -346,6 +348,29 @@ function esc(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+// ===== PDF MODAL =====
+function openPdfModal(btn) {
+  const url = `/api/pdf?url=${encodeURIComponent(btn.dataset.url)}&filename=${encodeURIComponent(btn.dataset.filename)}&mode=view`;
+  document.getElementById('pdf-modal-frame').src = url;
+  document.getElementById('pdf-modal-title').textContent = btn.dataset.filename;
+  document.getElementById('pdf-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePdfModal() {
+  document.getElementById('pdf-modal').classList.remove('open');
+  document.getElementById('pdf-modal-frame').src = '';
+  document.body.style.overflow = '';
+}
+
+function closePdfModalOverlay(e) {
+  if (e.target === document.getElementById('pdf-modal')) closePdfModal();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePdfModal();
+});
 
 // ===== INIT =====
 loadData();
