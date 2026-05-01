@@ -196,7 +196,7 @@ function listItemHTML(item, type) {
   const objectifField = type === 'tp' ? `
     <div class="form-group">
       <label class="form-label">Objectif du TP</label>
-      <input type="text" class="form-input" id="${type}-objectif-${item.id}" value="${esc(item.objectif || '')}" placeholder="Objectif pédagogique..." />
+      <input type="text" class="form-input" data-field="objectif" value="${esc(item.objectif || '')}" placeholder="Objectif pédagogique..." />
     </div>` : '';
 
   const techsValue = (item.technologies || []).join(', ');
@@ -205,17 +205,17 @@ function listItemHTML(item, type) {
     ? `<div class="upload-file-info" id="${type}-pdf-info-${item.id}">
         <i class="fa-solid fa-file-pdf"></i>
         <span class="upload-file-name">${esc(item.pdfNom || 'document.pdf')}</span>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePDF('${typePath}', ${item.id})" title="Supprimer le PDF">
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePDF('${typePath}', '${item.id}')" title="Supprimer le PDF">
           <i class="fa-solid fa-trash"></i>
         </button>
         <a href="${item.pdf}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></a>
       </div>
       <div class="upload-zone compact" id="${type}-dropzone-${item.id}" data-id="${item.id}" data-type="${typePath}">
-        <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', ${item.id}, this)" />
+        <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', '${item.id}', this)" />
         <p class="upload-text" style="font-size:0.82rem;"><i class="fa-solid fa-rotate"></i> Remplacer le PDF</p>
       </div>`
     : `<div class="upload-zone" id="${type}-dropzone-${item.id}" data-id="${item.id}" data-type="${typePath}">
-        <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', ${item.id}, this)" />
+        <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', '${item.id}', this)" />
         <div class="upload-icon" style="font-size:1.5rem;"><i class="fa-solid fa-file-pdf"></i></div>
         <p class="upload-text"><strong>Glisser le PDF</strong> ou cliquer</p>
         <p class="upload-hint">PDF uniquement — max 10 Mo</p>
@@ -228,10 +228,10 @@ function listItemHTML(item, type) {
         <span class="list-item-title">${esc(item.titre || 'Sans titre')}</span>
         <span class="list-item-meta">${item.date || ''}</span>
         <div class="list-item-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-primary btn-sm" onclick="saveItem('${typePath}', ${item.id})">
+          <button class="btn btn-primary btn-sm" onclick="saveItem('${typePath}', '${item.id}')">
             <i class="fa-solid fa-floppy-disk"></i> Sauver
           </button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteItem('${typePath}', ${item.id})" title="Supprimer">
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteItem('${typePath}', '${item.id}')" title="Supprimer">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
@@ -239,21 +239,21 @@ function listItemHTML(item, type) {
       <div class="list-item-body" id="body-${type}-item-${item.id}">
         <div class="form-group">
           <label class="form-label">Titre</label>
-          <input type="text" class="form-input" id="${type}-titre-${item.id}" value="${esc(item.titre || '')}" placeholder="Titre du ${typeLabel}..." />
+          <input type="text" class="form-input" data-field="titre" value="${esc(item.titre || '')}" placeholder="Titre du ${typeLabel}..." />
         </div>
         <div class="form-group">
           <label class="form-label">Description</label>
-          <textarea class="form-textarea" id="${type}-desc-${item.id}" rows="3" placeholder="Description...">${esc(item.description || '')}</textarea>
+          <textarea class="form-textarea" data-field="description" rows="3" placeholder="Description...">${esc(item.description || '')}</textarea>
         </div>
         ${objectifField}
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Technologies (séparées par des virgules)</label>
-            <input type="text" class="form-input" id="${type}-tech-${item.id}" value="${esc(techsValue)}" placeholder="Cisco, Linux, Windows Server..." />
+            <input type="text" class="form-input" data-field="tech" value="${esc(techsValue)}" placeholder="Cisco, Linux, Windows Server..." />
           </div>
           <div class="form-group">
             <label class="form-label">Date</label>
-            <input type="date" class="form-input" id="${type}-date-${item.id}" value="${item.date || ''}" />
+            <input type="date" class="form-input" data-field="date" value="${item.date || ''}" />
           </div>
         </div>
         <div class="form-group">
@@ -275,11 +275,14 @@ function toggleItem(id) {
 async function saveItem(type, id) {
   try {
     const typeSingular = type === 'tps' ? 'tp' : 'projet';
-    const titre = document.getElementById(`${typeSingular}-titre-${id}`)?.value || '';
-    const description = document.getElementById(`${typeSingular}-desc-${id}`)?.value || '';
-    const techsRaw = document.getElementById(`${typeSingular}-tech-${id}`)?.value || '';
-    const date = document.getElementById(`${typeSingular}-date-${id}`)?.value || '';
-    const objectif = document.getElementById(`${typeSingular}-objectif-${id}`)?.value || '';
+    const container = document.getElementById(`${typeSingular}-item-${id}`);
+    if (!container) return;
+    const f = (field) => container.querySelector(`[data-field="${field}"]`)?.value ?? '';
+
+    const titre = f('titre');
+    const description = f('description');
+    const techsRaw = f('tech');
+    const date = f('date');
 
     const payload = {
       titre,
@@ -287,15 +290,13 @@ async function saveItem(type, id) {
       technologies: techsRaw.split(',').map(t => t.trim()).filter(Boolean),
       date
     };
-    if (objectif !== undefined) payload.objectif = objectif;
+    if (type === 'tps') payload.objectif = f('objectif');
 
     await apiJSON(`/api/admin/${type}/${id}`, 'PUT', payload);
 
-    // Update title in header
-    const titleEl = document.querySelector(`#${typeSingular}-item-${id} .list-item-title`);
-    if (titleEl) titleEl.textContent = titre || 'Sans titre';
+    container.querySelector('.list-item-title').textContent = titre || 'Sans titre';
+    container.querySelector('.list-item-meta').textContent = date || '';
 
-    // Update local data
     const dataKey = type === 'tps' ? 'tps' : 'projets';
     const idx = data[dataKey].items.findIndex(i => i.id == id);
     if (idx !== -1) data[dataKey].items[idx] = { ...data[dataKey].items[idx], ...payload };
@@ -529,32 +530,32 @@ function renderVeilleList() {
         <span class="list-item-title">${esc(v.titre || 'Sans titre')}</span>
         <span class="list-item-meta">${v.source ? `[${esc(v.source)}] ` : ''}${v.date || ''}</span>
         <div class="list-item-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-primary btn-sm" onclick="saveVeille(${v.id})"><i class="fa-solid fa-floppy-disk"></i> Sauver</button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteVeille(${v.id})" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn btn-primary btn-sm" onclick="saveVeille('${v.id}')"><i class="fa-solid fa-floppy-disk"></i> Sauver</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteVeille('${v.id}')" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
       <div class="list-item-body" id="body-veille-item-${v.id}">
         <div class="form-group">
           <label class="form-label">Titre</label>
-          <input type="text" class="form-input" id="veille-titre-${v.id}" value="${esc(v.titre || '')}" />
+          <input type="text" class="form-input" data-field="titre" value="${esc(v.titre || '')}" />
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Source</label>
-            <input type="text" class="form-input" id="veille-source-${v.id}" value="${esc(v.source || '')}" placeholder="LeMagIT, ANSSI..." />
+            <input type="text" class="form-input" data-field="source" value="${esc(v.source || '')}" placeholder="LeMagIT, ANSSI..." />
           </div>
           <div class="form-group">
             <label class="form-label">Date</label>
-            <input type="date" class="form-input" id="veille-date-${v.id}" value="${v.date || ''}" />
+            <input type="date" class="form-input" data-field="date" value="${v.date || ''}" />
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Résumé</label>
-          <textarea class="form-textarea" id="veille-resume-${v.id}" rows="3">${esc(v.resume || '')}</textarea>
+          <textarea class="form-textarea" data-field="resume" rows="3">${esc(v.resume || '')}</textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Lien vers l'article</label>
-          <input type="url" class="form-input" id="veille-lien-${v.id}" value="${esc(v.lien || '')}" placeholder="https://..." />
+          <input type="url" class="form-input" data-field="lien" value="${esc(v.lien || '')}" placeholder="https://..." />
         </div>
       </div>
     </div>
@@ -563,18 +564,22 @@ function renderVeilleList() {
 
 async function saveVeille(id) {
   try {
+    const container = document.getElementById(`veille-item-${id}`);
+    if (!container) return;
+    const f = (field) => container.querySelector(`[data-field="${field}"]`)?.value ?? '';
+
     const payload = {
-      titre: document.getElementById(`veille-titre-${id}`)?.value || '',
-      source: document.getElementById(`veille-source-${id}`)?.value || '',
-      date: document.getElementById(`veille-date-${id}`)?.value || '',
-      resume: document.getElementById(`veille-resume-${id}`)?.value || '',
-      lien: document.getElementById(`veille-lien-${id}`)?.value || ''
+      titre: f('titre'),
+      source: f('source'),
+      date: f('date'),
+      resume: f('resume'),
+      lien: f('lien')
     };
     await apiJSON(`/api/admin/veille/${id}`, 'PUT', payload);
     const idx = data.veille.items.findIndex(v => v.id == id);
     if (idx !== -1) data.veille.items[idx] = { ...data.veille.items[idx], ...payload };
-    const titleEl = document.querySelector(`#veille-item-${id} .list-item-title`);
-    if (titleEl) titleEl.textContent = payload.titre || 'Sans titre';
+    container.querySelector('.list-item-title').textContent = payload.titre || 'Sans titre';
+    container.querySelector('.list-item-meta').textContent = (payload.source ? `[${payload.source}] ` : '') + (payload.date || '');
     toast('success', 'Article sauvegardé', '');
   } catch (err) {
     toast('error', 'Erreur', err.message);
@@ -639,8 +644,10 @@ function renderCompetencesAdmin() {
   `).join('');
 }
 
+function genId() { return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; }
+
 function addCategory() {
-  competencesState.push({ id: Date.now(), nom: 'Nouvelle catégorie', icone: 'fa-star', competences: [] });
+  competencesState.push({ id: genId(), nom: 'Nouvelle catégorie', icone: 'fa-star', competences: [] });
   renderCompetencesAdmin();
 }
 
@@ -652,7 +659,7 @@ function removeCategory(ci) {
 
 function addSkill(ci) {
   if (!competencesState[ci].competences) competencesState[ci].competences = [];
-  competencesState[ci].competences.push({ id: Date.now(), nom: '' });
+  competencesState[ci].competences.push({ id: genId(), nom: '' });
   renderCompetencesAdmin();
 }
 

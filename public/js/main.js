@@ -73,8 +73,8 @@ function renderSite(s) {
   if (!s) return;
   const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
 
-  // Meta
-  if (s.metaTitle) document.title = s.metaTitle;
+  // Meta — titre géré ici uniquement, renderPresentation ne doit pas toucher document.title
+  document.title = s.metaTitle || document.title;
 
   // Navbar
   set('nav-brand-text', s.navBrand);
@@ -159,8 +159,6 @@ function renderPresentation(data) {
   document.getElementById('t-nom').textContent = data.nom || '—';
   document.getElementById('t-localisation').textContent = data.localisation || '—';
 
-  // Page title
-  document.title = `${data.nom || 'Portfolio'} – BTS CIO SISR`;
 }
 
 // ===== PROJETS =====
@@ -185,21 +183,32 @@ function renderTPs(items) {
   grid.querySelectorAll('.card').forEach(el => observer.observe(el));
 }
 
+function pdfDownloadUrl(url, filename) {
+  if (!url) return '';
+  const safe = (filename || 'document.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+  return url.replace(/\/raw\/upload\//, `/raw/upload/fl_attachment:${safe}/`);
+}
+
+function normalizeUrl(url) {
+  if (!url) return '';
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 function cardHTML(item, type) {
-  const badgeClass = type === 'projet' ? 'badge-projet' : 'badge-tp';
-  const badgeIcon = type === 'projet' ? 'fa-folder' : 'fa-flask';
-  const badgeLabel = type === 'projet' ? 'Projet' : 'TP';
+  const badge = type === 'projet'
+    ? `<span class="card-badge badge-projet"><i class="fa-solid fa-folder"></i>Projet</span>`
+    : '';
 
   const tags = (item.technologies || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const objectif = item.objectif ? `<p class="card-objectif"><i class="fa-solid fa-bullseye"></i> ${esc(item.objectif)}</p>` : '';
   const pdfBtn = item.pdf
-    ? `<a href="${item.pdf}" target="_blank" class="btn-pdf"><i class="fa-solid fa-file-pdf"></i>${esc(item.pdfNom || 'Document PDF')}</a>`
+    ? `<a href="${pdfDownloadUrl(item.pdf, item.pdfNom)}" download="${esc(item.pdfNom || 'document.pdf')}" class="btn-pdf"><i class="fa-solid fa-file-pdf"></i>${esc(item.pdfNom || 'Document PDF')}</a>`
     : '';
 
   return `
     <div class="card fade-in">
       <div class="card-header">
-        <span class="card-badge ${badgeClass}"><i class="fa-solid ${badgeIcon}"></i>${badgeLabel}</span>
+        ${badge}
         <span class="card-date">${item.date || ''}</span>
       </div>
       <div class="card-body">
@@ -262,7 +271,7 @@ function renderVeille(items) {
       </div>
       ${v.lien ? `
         <div class="veille-footer">
-          <a href="${v.lien}" target="_blank" rel="noopener" class="veille-link">
+          <a href="${normalizeUrl(v.lien)}" target="_blank" rel="noopener" class="veille-link">
             Lire l'article <i class="fa-solid fa-arrow-up-right-from-square"></i>
           </a>
         </div>` : ''}
@@ -302,7 +311,7 @@ function renderContact(data) {
 
   socials.innerHTML = socialLinks
     .filter(s => s.url)
-    .map(s => `<a href="${s.url}" target="_blank" rel="noopener" class="social-btn" title="${s.label}"><i class="${s.icon}"></i></a>`)
+    .map(s => `<a href="${normalizeUrl(s.url)}" target="_blank" rel="noopener" class="social-btn" title="${s.label}"><i class="${s.icon}"></i></a>`)
     .join('');
 
   const cvWrapper = document.getElementById('contact-cv-wrapper');

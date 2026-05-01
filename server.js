@@ -129,6 +129,8 @@ const defaults = {
   }
 };
 
+const genId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
 // Helpers
 const readData = async (key) => {
   const doc = await Setting.findOne({ key });
@@ -136,7 +138,7 @@ const readData = async (key) => {
 };
 
 const writeData = async (key, value) => {
-  await Setting.findOneAndUpdate({ key }, { value }, { upsert: true, new: true });
+  await Setting.findOneAndUpdate({ key }, { value }, { upsert: true, returnDocument: 'after' });
 };
 
 const deleteCloudinaryFile = async (publicId, resourceType = 'image') => {
@@ -241,7 +243,7 @@ app.post('/api/admin/presentation/photo', auth, upPhoto.single('photo'), async (
 
 app.post('/api/admin/projets', auth, async (req, res) => {
   const data = await readData('projets');
-  const item = { id: Date.now(), titre: '', description: '', technologies: [], pdf: '', pdfNom: '', pdfPublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
+  const item = { id: genId(), titre: '', description: '', technologies: [], pdf: '', pdfNom: '', pdfPublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
   data.items.push(item);
   await writeData('projets', data);
   res.json(item);
@@ -295,7 +297,7 @@ app.delete('/api/admin/projets/:id/pdf', auth, async (req, res) => {
 
 app.post('/api/admin/tps', auth, async (req, res) => {
   const data = await readData('tps');
-  const item = { id: Date.now(), titre: '', description: '', objectif: '', pdf: '', pdfNom: '', pdfPublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
+  const item = { id: genId(), titre: '', description: '', objectif: '', pdf: '', pdfNom: '', pdfPublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
   data.items.push(item);
   await writeData('tps', data);
   res.json(item);
@@ -356,7 +358,7 @@ app.put('/api/admin/competences', auth, async (req, res) => {
 
 app.post('/api/admin/veille', auth, async (req, res) => {
   const data = await readData('veille');
-  const item = { id: Date.now(), titre: '', resume: '', source: '', lien: '', image: '', imagePublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
+  const item = { id: genId(), titre: '', resume: '', source: '', lien: '', image: '', imagePublicId: '', date: new Date().toISOString().split('T')[0], ...req.body };
   data.items.push(item);
   await writeData('veille', data);
   res.json(item);
