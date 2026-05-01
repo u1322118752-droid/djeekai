@@ -209,7 +209,7 @@ const auth = (req, res, next) => {
 
 // ===== PDF PROXY =====
 
-app.get('/api/pdf', async (req, res) => {
+app.get('/api/pdf', (req, res) => {
   let { url, filename, mode } = req.query;
   if (!url) return res.status(400).send('URL manquante');
   try { url = decodeURIComponent(url); } catch { return res.status(400).send('URL invalide'); }
@@ -220,20 +220,26 @@ app.get('/api/pdf', async (req, res) => {
   const safe = name.replace(/[^\w.\- ]/g, '_');
   const disposition = mode === 'view' ? 'inline' : 'attachment';
 
-  try {
-    console.log('PDF proxy fetch:', url);
-    const response = await fetch(url);
-    console.log('PDF proxy status:', response.status);
-    if (!response.ok) return res.status(404).send('Fichier introuvable');
-    const buffer = Buffer.from(await response.arrayBuffer());
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
-    res.setHeader('Content-Length', buffer.length);
-    res.end(buffer);
-  } catch (err) {
-    console.error('PDF proxy error:', err);
-    res.status(500).send('Erreur proxy PDF');
-  }
+  const pipe = (targetUrl, attempt) => {
+    require('https').get(targetUrl, (upstream) => {
+      console.log(`PDF proxy [${attempt}] status=${upstream.statusCode} url=${targetUrl}`);
+      if ((upstream.statusCode === 301 || upstream.statusCode === 302) && upstream.headers.location && attempt < 3) {
+        upstream.resume();
+        return pipe(upstream.headers.location, attempt + 1);
+      }
+      if (upstream.statusCode !== 200) {
+        upstream.resume();
+        return res.status(404).send('Fichier introuvable');
+      }
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
+      upstream.pipe(res);
+    }).on('error', (err) => {
+      console.error('PDF proxy error:', err);
+      if (!res.headersSent) res.status(500).send('Erreur proxy PDF');
+    });
+  };
+  pipe(url, 1);
 });
 
 // ===== PUBLIC API =====

@@ -613,6 +613,15 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ===== PDF MODAL ===== */
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .pdf-modal-overlay {
   display: none;
   position: fixed;
@@ -626,6 +635,11 @@ a { color: inherit; text-decoration: none; }
 
 .pdf-modal-overlay.open {
   display: flex;
+  animation: modalFadeIn 0.2s ease forwards;
+}
+
+.pdf-modal-overlay.open .pdf-modal-box {
+  animation: modalSlideUp 0.25s ease forwards;
 }
 
 .pdf-modal-box {
