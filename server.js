@@ -171,7 +171,7 @@ const pdfMemory = multer({
 const uploadPDFToCloudinary = (buffer, folder, originalname) => new Promise((resolve, reject) => {
   const publicId = `portfolio/${folder}/${Date.now()}_${originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
   const stream = cloudinary.uploader.upload_stream(
-    { resource_type: 'raw', public_id: publicId },
+    { resource_type: 'raw', type: 'upload', public_id: publicId },
     (err, result) => err ? reject(err) : resolve(result)
   );
   stream.end(buffer);
@@ -219,9 +219,20 @@ app.get('/api/pdf', (req, res) => {
   const safe = name.replace(/[^\w.\- ]/g, '_');
   const disposition = mode === 'view' ? 'inline' : 'attachment';
 
+  // Générer une URL signée pour contourner les restrictions d'accès Cloudinary (401)
+  let fetchUrl = url;
+  const m = url.match(/\/raw\/upload\/(?:v\d+\/)?(.+)$/);
+  if (m && process.env.CLOUDINARY_API_SECRET) {
+    try {
+      fetchUrl = cloudinary.url(m[1], { resource_type: 'raw', sign_url: true, secure: true });
+    } catch (e) {
+      console.warn('PDF proxy: signature URL échouée, URL originale utilisée:', e.message);
+    }
+  }
+
   const pipe = (targetUrl, attempt) => {
     require('https').get(targetUrl, (upstream) => {
-      console.log(`PDF proxy [${attempt}] status=${upstream.statusCode} url=${targetUrl}`);
+      console.log(`PDF proxy [${attempt}] status=${upstream.statusCode}`);
       if ((upstream.statusCode === 301 || upstream.statusCode === 302) && upstream.headers.location && attempt < 3) {
         upstream.resume();
         return pipe(upstream.headers.location, attempt + 1);
@@ -238,7 +249,7 @@ app.get('/api/pdf', (req, res) => {
       if (!res.headersSent) res.status(500).send('Erreur proxy PDF');
     });
   };
-  pipe(url, 1);
+  pipe(fetchUrl, 1);
 });
 
 // ===== PUBLIC API =====
