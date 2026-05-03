@@ -174,8 +174,7 @@ const uploadPDFToCloudinary = (buffer, folder, originalname) => new Promise((res
     { resource_type: 'raw', public_id: publicId },
     (err, result) => err ? reject(err) : resolve(result)
   );
-  const { Readable } = require('stream');
-  Readable.from(buffer).pipe(stream);
+  stream.end(buffer);
 });
 
 const upPDF = pdfMemory.single('pdf');
@@ -229,7 +228,7 @@ app.get('/api/pdf', (req, res) => {
       }
       if (upstream.statusCode !== 200) {
         upstream.resume();
-        return res.status(404).send('Fichier introuvable');
+        return res.status(404).send(`Fichier introuvable (Cloudinary: ${upstream.statusCode})`);
       }
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
