@@ -4,6 +4,8 @@ const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const mongoose = require('mongoose');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -170,10 +172,15 @@ const pdfMemory = multer({
 
 const uploadPDFToCloudinary = async (buffer, folder, originalname) => {
   const publicId = `portfolio/${folder}/${Date.now()}_${originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-  const dataUri = `data:application/pdf;base64,${buffer.toString('base64')}`;
-  const result = await cloudinary.uploader.upload(dataUri, { resource_type: 'raw', type: 'upload', public_id: publicId });
-  console.log(`PDF uploaded: public_id=${result.public_id} bytes=${result.bytes} url=${result.secure_url}`);
-  return result;
+  const tmpPath = path.join(os.tmpdir(), `pdf_${Date.now()}_${Math.random().toString(36).slice(2)}.pdf`);
+  fs.writeFileSync(tmpPath, buffer);
+  try {
+    const result = await cloudinary.uploader.upload(tmpPath, { resource_type: 'raw', type: 'upload', public_id: publicId });
+    console.log(`PDF uploaded: public_id=${result.public_id} bytes=${result.bytes}`);
+    return result;
+  } finally {
+    fs.unlink(tmpPath, () => {});
+  }
 };
 
 const upPDF = pdfMemory.single('pdf');
@@ -208,7 +215,7 @@ const auth = (req, res, next) => {
 // ===== PDF PROXY =====
 
 app.get('/api/pdf', (req, res) => {
-  let { url, mode } = req.query;
+  let { url, filename, mode } = req.query;
   if (!url) return res.status(400).send('URL manquante');
   try { url = decodeURIComponent(url); } catch { return res.status(400).send('URL invalide'); }
   if (!url.startsWith('https://res.cloudinary.com/')) return res.status(403).send('URL non autorisée');
@@ -217,18 +224,35 @@ app.get('/api/pdf', (req, res) => {
   if (!m) return res.status(400).send('URL Cloudinary invalide');
   const publicId = m[1];
 
+  let signedUrl;
   try {
-    if (mode === 'view') {
-      const signedUrl = cloudinary.url(publicId, { resource_type: 'raw', sign_url: true, secure: true });
-      return res.redirect(302, signedUrl);
-    } else {
-      const dlUrl = cloudinary.utils.private_download_url(publicId, '', { resource_type: 'raw', attachment: true });
-      return res.redirect(302, dlUrl);
-    }
+    signedUrl = cloudinary.url(publicId, { resource_type: 'raw', sign_url: true, secure: true });
   } catch (e) {
-    console.error('PDF URL error:', e);
-    res.status(500).send('Erreur URL PDF: ' + e.message);
+    console.error('PDF sign error:', e);
+    return res.status(500).send('Erreur signature URL');
   }
+
+  if (mode === 'view') {
+    return res.redirect(302, signedUrl);
+  }
+
+  let name = filename ? decodeURIComponent(filename) : 'document.pdf';
+  if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
+  const safe = name.replace(/[^\w.\- ]/g, '_');
+
+  require('https').get(signedUrl, (upstream) => {
+    console.log(`PDF download: status=${upstream.statusCode} publicId=${publicId}`);
+    if (upstream.statusCode !== 200) {
+      upstream.resume();
+      return res.status(404).send(`Fichier introuvable (${upstream.statusCode})`);
+    }
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${safe}"`);
+    upstream.pipe(res);
+  }).on('error', (err) => {
+    console.error('PDF download error:', err);
+    if (!res.headersSent) res.status(500).send('Erreur téléchargement');
+  });
 });
 
 // ===== PUBLIC API =====
