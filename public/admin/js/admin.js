@@ -201,25 +201,24 @@ function listItemHTML(item, type) {
 
   const techsValue = (item.technologies || []).join(', ');
 
-  const pdfSection = item.pdf
-    ? `<div class="upload-file-info" id="${type}-pdf-info-${item.id}">
-        <i class="fa-solid fa-file-pdf"></i>
-        <span class="upload-file-name">${esc(item.pdfNom || 'document.pdf')}</span>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deletePDF('${typePath}', '${item.id}')" title="Supprimer le PDF">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-        <a href="${item.pdf}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></a>
-      </div>
-      <div class="upload-zone compact" id="${type}-dropzone-${item.id}" data-id="${item.id}" data-type="${typePath}">
-        <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', '${item.id}', this)" />
-        <p class="upload-text" style="font-size:0.82rem;"><i class="fa-solid fa-rotate"></i> Remplacer le PDF</p>
-      </div>`
-    : `<div class="upload-zone" id="${type}-dropzone-${item.id}" data-id="${item.id}" data-type="${typePath}">
-        <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', '${item.id}', this)" />
-        <div class="upload-icon" style="font-size:1.5rem;"><i class="fa-solid fa-file-pdf"></i></div>
-        <p class="upload-text"><strong>Glisser le PDF</strong> ou cliquer</p>
-        <p class="upload-hint">PDF uniquement — max 10 Mo</p>
-      </div>`;
+  const pdfs = item.pdfs?.length ? item.pdfs
+    : (item.pdf ? [{ id: 'legacy', url: item.pdf, nom: item.pdfNom || 'document.pdf' }] : []);
+  const pdfSection = `
+    <div id="${type}-pdfs-${item.id}">
+      ${pdfs.map(p => `
+        <div class="upload-file-info">
+          <i class="fa-solid fa-file-pdf"></i>
+          <span class="upload-file-name">${esc(p.nom || 'document.pdf')}</span>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deletePDF('${typePath}', '${item.id}', '${p.id}')" title="Supprimer">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+          <a href="${p.url}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></a>
+        </div>`).join('')}
+    </div>
+    <div class="upload-zone compact" id="${type}-dropzone-${item.id}" data-id="${item.id}" data-type="${typePath}">
+      <input type="file" accept=".pdf" onchange="uploadPDF('${typePath}', '${item.id}', this)" />
+      <p class="upload-text" style="font-size:0.82rem;"><i class="fa-solid fa-plus"></i> Ajouter un PDF</p>
+    </div>`;
 
   return `
     <div class="list-item" id="${type}-item-${item.id}">
@@ -330,27 +329,27 @@ async function uploadPDF(type, id, input) {
     const fd = new FormData();
     fd.append('pdf', file);
     const result = await apiUpload(`/api/admin/${type}/${id}/pdf`, fd);
-    const typeSingular = type === 'tps' ? 'tp' : 'projet';
-    const dataKey = type;
-    const idx = data[dataKey].items.findIndex(i => i.id == id);
+    const idx = data[type].items.findIndex(i => i.id == id);
     if (idx !== -1) {
-      data[dataKey].items[idx].pdf = result.pdf;
-      data[dataKey].items[idx].pdfNom = result.pdfNom;
+      if (!data[type].items[idx].pdfs) data[type].items[idx].pdfs = [];
+      data[type].items[idx].pdfs.push({ id: result.pdfId, url: result.pdf, nom: result.pdfNom });
     }
     if (type === 'tps') renderTPsList();
     else renderProjetsList();
-    toast('success', 'PDF uploadé', file.name);
+    toast('success', 'PDF ajouté', file.name);
   } catch (err) {
     toast('error', 'Erreur upload', err.message);
   }
 }
 
-async function deletePDF(type, id) {
+async function deletePDF(type, id, pdfId) {
   if (!confirm('Supprimer ce PDF ?')) return;
   try {
-    await apiJSON(`/api/admin/${type}/${id}/pdf`, 'DELETE');
+    await apiJSON(`/api/admin/${type}/${id}/pdf/${pdfId}`, 'DELETE');
     const idx = data[type].items.findIndex(i => i.id == id);
-    if (idx !== -1) { data[type].items[idx].pdf = ''; data[type].items[idx].pdfNom = ''; }
+    if (idx !== -1) {
+      data[type].items[idx].pdfs = (data[type].items[idx].pdfs || []).filter(p => p.id != pdfId);
+    }
     if (type === 'tps') renderTPsList();
     else renderProjetsList();
     toast('success', 'PDF supprimé', '');
@@ -375,10 +374,13 @@ function setupDragDrop(type) {
       try {
         const result = await apiUpload(`/api/admin/${typePath}/${id}/pdf`, fd);
         const idx = data[typePath].items.findIndex(i => i.id == id);
-        if (idx !== -1) { data[typePath].items[idx].pdf = result.pdf; data[typePath].items[idx].pdfNom = result.pdfNom; }
+        if (idx !== -1) {
+          if (!data[typePath].items[idx].pdfs) data[typePath].items[idx].pdfs = [];
+          data[typePath].items[idx].pdfs.push({ id: result.pdfId, url: result.pdf, nom: result.pdfNom });
+        }
         if (typePath === 'tps') renderTPsList();
         else renderProjetsList();
-        toast('success', 'PDF uploadé', file.name);
+        toast('success', 'PDF ajouté', file.name);
       } catch (err) {
         toast('error', 'Erreur upload', err.message);
       }

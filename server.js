@@ -332,23 +332,22 @@ app.post('/api/admin/projets/:id/pdf', auth, upPDF, async (req, res) => {
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  deleteLocalPDF(data.items[idx].pdfPublicId);
   const saved = savePDFLocal(req.file);
-  data.items[idx].pdf = saved.url;
-  data.items[idx].pdfNom = saved.nom;
-  data.items[idx].pdfPublicId = saved.publicId;
+  const entry = { id: genId(), url: saved.url, nom: saved.nom, publicId: saved.publicId };
+  if (!data.items[idx].pdfs) data.items[idx].pdfs = [];
+  data.items[idx].pdfs.push(entry);
   await writeData('projets', data);
-  res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
+  res.json({ pdfId: entry.id, pdf: entry.url, pdfNom: entry.nom });
 });
 
-app.delete('/api/admin/projets/:id/pdf', auth, async (req, res) => {
+app.delete('/api/admin/projets/:id/pdf/:pdfId', auth, async (req, res) => {
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  deleteLocalPDF(data.items[idx].pdfPublicId);
-  data.items[idx].pdf = '';
-  data.items[idx].pdfNom = '';
-  data.items[idx].pdfPublicId = '';
+  const pdfs = data.items[idx].pdfs || [];
+  const pi = pdfs.findIndex(p => p.id == req.params.pdfId);
+  if (pi !== -1) { deleteLocalPDF(pdfs[pi].publicId); pdfs.splice(pi, 1); }
+  data.items[idx].pdfs = pdfs;
   await writeData('projets', data);
   res.json({ success: true });
 });
@@ -387,23 +386,22 @@ app.post('/api/admin/tps/:id/pdf', auth, upTPDF, async (req, res) => {
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  deleteLocalPDF(data.items[idx].pdfPublicId);
   const saved = savePDFLocal(req.file);
-  data.items[idx].pdf = saved.url;
-  data.items[idx].pdfNom = saved.nom;
-  data.items[idx].pdfPublicId = saved.publicId;
+  const entry = { id: genId(), url: saved.url, nom: saved.nom, publicId: saved.publicId };
+  if (!data.items[idx].pdfs) data.items[idx].pdfs = [];
+  data.items[idx].pdfs.push(entry);
   await writeData('tps', data);
-  res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
+  res.json({ pdfId: entry.id, pdf: entry.url, pdfNom: entry.nom });
 });
 
-app.delete('/api/admin/tps/:id/pdf', auth, async (req, res) => {
+app.delete('/api/admin/tps/:id/pdf/:pdfId', auth, async (req, res) => {
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  deleteLocalPDF(data.items[idx].pdfPublicId);
-  data.items[idx].pdf = '';
-  data.items[idx].pdfNom = '';
-  data.items[idx].pdfPublicId = '';
+  const pdfs = data.items[idx].pdfs || [];
+  const pi = pdfs.findIndex(p => p.id == req.params.pdfId);
+  if (pi !== -1) { deleteLocalPDF(pdfs[pi].publicId); pdfs.splice(pi, 1); }
+  data.items[idx].pdfs = pdfs;
   await writeData('tps', data);
   res.json({ success: true });
 });

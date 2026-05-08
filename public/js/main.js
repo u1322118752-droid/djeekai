@@ -191,17 +191,20 @@ function cardHTML(item, type) {
 
   const tags = (item.technologies || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   const objectif = item.objectif ? `<p class="card-objectif"><i class="fa-solid fa-bullseye"></i> ${esc(item.objectif)}</p>` : '';
-  const pdfFooter = item.pdf ? `
-    <div class="card-footer">
-      <button class="btn-pdf"
-        data-url="${esc(item.pdf)}"
-        data-filename="${esc(item.pdfNom || 'document.pdf')}"
-        onclick="openPdfModal(this)">
-        <i class="fa-solid fa-eye"></i> Voir
-      </button>
-      <a href="/api/pdf?url=${encodeURIComponent(item.pdf)}&filename=${encodeURIComponent(item.pdfNom || 'document.pdf')}" class="btn-pdf btn-pdf-dl">
-        <i class="fa-solid fa-download"></i> Télécharger
-      </a>
+  const pdfs = item.pdfs?.length ? item.pdfs
+    : (item.pdf ? [{ url: item.pdf, nom: item.pdfNom || 'document.pdf' }] : []);
+  const pdfFooter = pdfs.length ? `
+    <div class="card-footer card-footer-pdfs">
+      ${pdfs.map(p => `
+        <div class="pdf-row">
+          <span class="pdf-name"><i class="fa-solid fa-file-pdf"></i> ${esc(p.nom || 'document.pdf')}</span>
+          <button class="btn-pdf" data-url="${esc(p.url)}" data-filename="${esc(p.nom || 'document.pdf')}" onclick="openPdfModal(this)">
+            <i class="fa-solid fa-eye"></i> Voir
+          </button>
+          <a href="/api/pdf?url=${encodeURIComponent(p.url)}&filename=${encodeURIComponent(p.nom || 'document.pdf')}" class="btn-pdf btn-pdf-dl">
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>`).join('')}
     </div>` : '';
 
   return `
