@@ -222,28 +222,16 @@ app.get('/api/pdf', (req, res) => {
   try { url = decodeURIComponent(url); } catch { return res.status(400).send('URL invalide'); }
   if (!url.startsWith('https://res.cloudinary.com/')) return res.status(403).send('URL non autorisée');
 
-  const m = url.match(/\/raw\/upload\/(?:v\d+\/)?(.+)$/);
-  if (!m) return res.status(400).send('URL Cloudinary invalide');
-  const publicId = m[1];
-
-  let signedUrl;
-  try {
-    signedUrl = cloudinary.url(publicId, { resource_type: 'raw', sign_url: true, secure: true });
-  } catch (e) {
-    console.error('PDF sign error:', e);
-    return res.status(500).send('Erreur signature URL');
-  }
-
   if (mode === 'view') {
-    return res.redirect(302, signedUrl);
+    return res.redirect(302, url);
   }
 
   let name = filename ? decodeURIComponent(filename) : 'document.pdf';
   if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
   const safe = name.replace(/[^\w.\- ]/g, '_');
 
-  require('https').get(signedUrl, (upstream) => {
-    console.log(`PDF download: status=${upstream.statusCode} publicId=${publicId}`);
+  require('https').get(url, (upstream) => {
+    console.log(`PDF download: status=${upstream.statusCode} url=${url}`);
     if (upstream.statusCode !== 200) {
       upstream.resume();
       return res.status(404).send(`Fichier introuvable (${upstream.statusCode})`);
