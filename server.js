@@ -25,6 +25,7 @@ cloudinary.config({
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB model
 const Setting = mongoose.model('Setting', new mongoose.Schema({
@@ -165,29 +166,36 @@ const mkImageUpload = (folder) => multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// PDF upload via mémoire + stream manuel vers Cloudinary (plus fiable que multer-storage-cloudinary pour les raw)
-const pdfMemory = multer({
-  storage: multer.memoryStorage(),
+// PDF stockés localement sur le serveur (évite les restrictions Cloudinary sur les fichiers RAW)
+const PDF_DIR = path.join(__dirname, 'uploads', 'pdfs');
+fs.mkdirSync(PDF_DIR, { recursive: true });
+
+const pdfDiskStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, PDF_DIR),
+  filename: (req, file, cb) => cb(null, `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`)
+});
+
+const pdfDisk = multer({
+  storage: pdfDiskStorage,
   fileFilter: (_, file, cb) => file.mimetype === 'application/pdf' ? cb(null, true) : cb(new Error('Seuls les fichiers PDF sont acceptés')),
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-const uploadPDFToCloudinary = async (buffer, folder, originalname) => {
-  const publicId = `portfolio/${folder}/${Date.now()}_${originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-  const tmpPath = path.join(os.tmpdir(), `pdf_${Date.now()}_${Math.random().toString(36).slice(2)}.pdf`);
-  fs.writeFileSync(tmpPath, buffer);
-  try {
-    const result = await cloudinary.uploader.upload(tmpPath, { resource_type: 'raw', type: 'upload', public_id: publicId });
-    console.log(`PDF uploaded: public_id=${result.public_id} bytes=${result.bytes}`);
-    return result;
-  } finally {
-    fs.unlink(tmpPath, () => {});
-  }
+const savePDFLocal = (file) => ({
+  url: `/uploads/pdfs/${file.filename}`,
+  nom: file.originalname,
+  publicId: file.filename
+});
+
+const deleteLocalPDF = (filename) => {
+  if (!filename) return;
+  const filePath = path.join(PDF_DIR, filename);
+  fs.unlink(filePath, () => {});
 };
 
-const upPDF = pdfMemory.single('pdf');
-const upTPDF = pdfMemory.single('pdf');
-const upCVPDF = pdfMemory.single('cv');
+const upPDF = pdfDisk.single('pdf');
+const upTPDF = pdfDisk.single('pdf');
+const upCVPDF = pdfDisk.single('cv');
 const upPhoto = mkImageUpload('presentation');
 const upVeille = mkImageUpload('veille');
 
@@ -220,38 +228,22 @@ app.get('/api/pdf', (req, res) => {
   let { url, filename, mode } = req.query;
   if (!url) return res.status(400).send('URL manquante');
   try { url = decodeURIComponent(url); } catch { return res.status(400).send('URL invalide'); }
-  if (!url.startsWith('https://res.cloudinary.com/')) return res.status(403).send('URL non autorisée');
-
-  const m = url.match(/\/raw\/upload\/(?:v\d+\/)?(.+)$/);
-  if (!m) return res.status(400).send('URL Cloudinary invalide');
-  const publicId = m[1];
 
   let name = filename ? decodeURIComponent(filename) : 'document.pdf';
   if (!name.toLowerCase().endsWith('.pdf')) name += '.pdf';
   const safe = name.replace(/[^\w.\- ]/g, '_');
-
-  // private_download_url utilise l'auth API (contourne la restriction RAW du CDN)
-  // format vide car le public_id contient déjà l'extension .pdf
-  const authUrl = cloudinary.utils.private_download_url(publicId, '', {
-    resource_type: 'raw',
-    expires_at: Math.floor(Date.now() / 1000) + 3600
-  });
-
   const disposition = mode === 'view' ? 'inline' : 'attachment';
 
-  require('https').get(authUrl, (upstream) => {
-    console.log(`PDF ${mode}: status=${upstream.statusCode} publicId=${publicId}`);
-    if (upstream.statusCode !== 200) {
-      upstream.resume();
-      return res.status(404).send(`Fichier introuvable (${upstream.statusCode})`);
-    }
+  // PDF local (nouveau système)
+  if (url.startsWith('/uploads/pdfs/')) {
+    const filePath = path.join(__dirname, url);
+    if (!fs.existsSync(filePath)) return res.status(404).send('Fichier introuvable');
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `${disposition}; filename="${safe}"`);
-    upstream.pipe(res);
-  }).on('error', (err) => {
-    console.error('PDF error:', err);
-    if (!res.headersSent) res.status(500).send('Erreur téléchargement');
-  });
+    return fs.createReadStream(filePath).pipe(res);
+  }
+
+  return res.status(404).send('Fichier introuvable (ancien format Cloudinary — veuillez re-uploader le PDF)');
 });
 
 // ===== PUBLIC API =====
@@ -329,36 +321,31 @@ app.delete('/api/admin/projets/:id', auth, async (req, res) => {
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
+  deleteLocalPDF(data.items[idx].pdfPublicId);
   data.items.splice(idx, 1);
   await writeData('projets', data);
   res.json({ success: true });
 });
 
 app.post('/api/admin/projets/:id/pdf', auth, upPDF, async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
-    const data = await readData('projets');
-    const idx = data.items.findIndex(p => p.id == req.params.id);
-    if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-    await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
-    const result = await uploadPDFToCloudinary(req.file.buffer, 'projets', req.file.originalname);
-    data.items[idx].pdf = result.secure_url;
-    data.items[idx].pdfNom = req.file.originalname;
-    data.items[idx].pdfPublicId = result.public_id;
-    await writeData('projets', data);
-    res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
-  } catch (err) {
-    console.error('PDF upload error:', err);
-    res.status(500).json({ error: err.message || 'Erreur upload PDF' });
-  }
+  if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
+  const data = await readData('projets');
+  const idx = data.items.findIndex(p => p.id == req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
+  deleteLocalPDF(data.items[idx].pdfPublicId);
+  const saved = savePDFLocal(req.file);
+  data.items[idx].pdf = saved.url;
+  data.items[idx].pdfNom = saved.nom;
+  data.items[idx].pdfPublicId = saved.publicId;
+  await writeData('projets', data);
+  res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
 });
 
 app.delete('/api/admin/projets/:id/pdf', auth, async (req, res) => {
   const data = await readData('projets');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Projet non trouvé' });
-  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
+  deleteLocalPDF(data.items[idx].pdfPublicId);
   data.items[idx].pdf = '';
   data.items[idx].pdfNom = '';
   data.items[idx].pdfPublicId = '';
@@ -389,36 +376,31 @@ app.delete('/api/admin/tps/:id', auth, async (req, res) => {
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
+  deleteLocalPDF(data.items[idx].pdfPublicId);
   data.items.splice(idx, 1);
   await writeData('tps', data);
   res.json({ success: true });
 });
 
 app.post('/api/admin/tps/:id/pdf', auth, upTPDF, async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
-    const data = await readData('tps');
-    const idx = data.items.findIndex(p => p.id == req.params.id);
-    if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-    await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
-    const result = await uploadPDFToCloudinary(req.file.buffer, 'tps', req.file.originalname);
-    data.items[idx].pdf = result.secure_url;
-    data.items[idx].pdfNom = req.file.originalname;
-    data.items[idx].pdfPublicId = result.public_id;
-    await writeData('tps', data);
-    res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
-  } catch (err) {
-    console.error('PDF upload error:', err);
-    res.status(500).json({ error: err.message || 'Erreur upload PDF' });
-  }
+  if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
+  const data = await readData('tps');
+  const idx = data.items.findIndex(p => p.id == req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
+  deleteLocalPDF(data.items[idx].pdfPublicId);
+  const saved = savePDFLocal(req.file);
+  data.items[idx].pdf = saved.url;
+  data.items[idx].pdfNom = saved.nom;
+  data.items[idx].pdfPublicId = saved.publicId;
+  await writeData('tps', data);
+  res.json({ pdf: data.items[idx].pdf, pdfNom: data.items[idx].pdfNom });
 });
 
 app.delete('/api/admin/tps/:id/pdf', auth, async (req, res) => {
   const data = await readData('tps');
   const idx = data.items.findIndex(p => p.id == req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'TP non trouvé' });
-  await deleteCloudinaryFile(data.items[idx].pdfPublicId, 'raw');
+  deleteLocalPDF(data.items[idx].pdfPublicId);
   data.items[idx].pdf = '';
   data.items[idx].pdfNom = '';
   data.items[idx].pdfPublicId = '';
@@ -483,25 +465,20 @@ app.put('/api/admin/contact', auth, async (req, res) => {
 });
 
 app.post('/api/admin/contact/cv', auth, upCVPDF, async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
-    const data = await readData('contact');
-    await deleteCloudinaryFile(data.cvPublicId, 'raw');
-    const result = await uploadPDFToCloudinary(req.file.buffer, 'cv', req.file.originalname);
-    data.cv = result.secure_url;
-    data.cvNom = req.file.originalname;
-    data.cvPublicId = result.public_id;
-    await writeData('contact', data);
-    res.json({ cv: data.cv, cvNom: data.cvNom });
-  } catch (err) {
-    console.error('CV upload error:', err);
-    res.status(500).json({ error: err.message || 'Erreur upload CV' });
-  }
+  if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
+  const data = await readData('contact');
+  deleteLocalPDF(data.cvPublicId);
+  const saved = savePDFLocal(req.file);
+  data.cv = saved.url;
+  data.cvNom = saved.nom;
+  data.cvPublicId = saved.publicId;
+  await writeData('contact', data);
+  res.json({ cv: data.cv, cvNom: data.cvNom });
 });
 
 app.delete('/api/admin/contact/cv', auth, async (req, res) => {
   const data = await readData('contact');
-  await deleteCloudinaryFile(data.cvPublicId, 'raw');
+  deleteLocalPDF(data.cvPublicId);
   data.cv = '';
   data.cvNom = '';
   data.cvPublicId = '';
