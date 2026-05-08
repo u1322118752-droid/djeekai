@@ -636,19 +636,7 @@ function renderCompetencesAdmin() {
         </div>
       </div>
       <div class="edit-card-body" style="gap:10px;">
-        ${(cat.competences || []).map((sk, si) => `
-          <div class="skill-admin-row">
-            <input type="text" value="${esc(sk.nom)}" placeholder="Nom de la compétence"
-              oninput="competencesState[${ci}].competences[${si}].nom = this.value" />
-            <button class="btn btn-ghost btn-sm btn-icon" onclick="removeSkill(${ci}, ${si})" title="Supprimer">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-        `).join('')}
-        <button class="btn btn-outline btn-sm" onclick="addSkill(${ci})" style="margin-top:4px;">
-          <i class="fa-solid fa-plus"></i> Ajouter une compétence
-        </button>
-        <div style="border-top:1px solid var(--border); margin-top:12px; padding-top:12px;">
+        <div style="border-top:1px solid var(--border); margin-top:4px; padding-top:12px;">
           <label class="form-label" style="margin-bottom:8px;"><i class="fa-solid fa-file-pdf"></i> Document PDF de la catégorie</label>
           <div id="comp-pdf-${cat.id}">
             ${cat.pdf ? `
@@ -714,16 +702,6 @@ function removeCategory(ci) {
   renderCompetencesAdmin();
 }
 
-function addSkill(ci) {
-  if (!competencesState[ci].competences) competencesState[ci].competences = [];
-  competencesState[ci].competences.push({ id: genId(), nom: '' });
-  renderCompetencesAdmin();
-}
-
-function removeSkill(ci, si) {
-  competencesState[ci].competences.splice(si, 1);
-  renderCompetencesAdmin();
-}
 
 async function saveCompetences() {
   try {
