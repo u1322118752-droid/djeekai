@@ -12,8 +12,10 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'portfolio-bts-sisr-secret-2024';
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://djeekai:T_u44DqQ-pYrvdf@cluster0.nbkxfow.mongodb.net/?appName=Cluster0';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) { console.error('❌ JWT_SECRET manquant dans .env'); process.exit(1); }
+const MONGO_URI = process.env.MONGODB_URI;
+if (!MONGO_URI) { console.error('❌ MONGODB_URI manquant dans .env'); process.exit(1); }
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
