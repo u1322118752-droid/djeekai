@@ -348,7 +348,14 @@ async function deletePDF(type, id, pdfId) {
     await apiJSON(`/api/admin/${type}/${id}/pdf/${pdfId}`, 'DELETE');
     const idx = data[type].items.findIndex(i => i.id == id);
     if (idx !== -1) {
-      data[type].items[idx].pdfs = (data[type].items[idx].pdfs || []).filter(p => p.id != pdfId);
+      const item = data[type].items[idx];
+      item.pdfs = (item.pdfs || []).filter(p => p.id != pdfId);
+      // Clear legacy fields when deleting legacy entry or when no PDFs remain
+      if (pdfId === 'legacy' || item.pdfs.length === 0) {
+        item.pdf = '';
+        item.pdfNom = '';
+        item.pdfPublicId = '';
+      }
     }
     if (type === 'tps') renderTPsList();
     else renderProjetsList();
@@ -904,5 +911,5 @@ function toast(type, title, msg) {
 // ===== UTILS =====
 function esc(str) {
   if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
