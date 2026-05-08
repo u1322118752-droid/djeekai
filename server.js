@@ -435,6 +435,32 @@ app.put('/api/admin/competences', auth, async (req, res) => {
   res.json(req.body);
 });
 
+app.post('/api/admin/competences/:catId/pdf', auth, upPDF, async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Aucun fichier fourni' });
+  const data = await readData('competences');
+  const idx = data.categories.findIndex(c => c.id == req.params.catId);
+  if (idx === -1) return res.status(404).json({ error: 'Catégorie non trouvée' });
+  deleteLocalPDF(data.categories[idx].pdfPublicId);
+  const saved = savePDFLocal(req.file);
+  data.categories[idx].pdf = saved.url;
+  data.categories[idx].pdfNom = saved.nom;
+  data.categories[idx].pdfPublicId = saved.publicId;
+  await writeData('competences', data);
+  res.json({ pdf: saved.url, pdfNom: saved.nom });
+});
+
+app.delete('/api/admin/competences/:catId/pdf', auth, async (req, res) => {
+  const data = await readData('competences');
+  const idx = data.categories.findIndex(c => c.id == req.params.catId);
+  if (idx === -1) return res.status(404).json({ error: 'Catégorie non trouvée' });
+  deleteLocalPDF(data.categories[idx].pdfPublicId);
+  data.categories[idx].pdf = '';
+  data.categories[idx].pdfNom = '';
+  data.categories[idx].pdfPublicId = '';
+  await writeData('competences', data);
+  res.json({ success: true });
+});
+
 // ===== ADMIN: VEILLE =====
 
 app.post('/api/admin/veille', auth, async (req, res) => {

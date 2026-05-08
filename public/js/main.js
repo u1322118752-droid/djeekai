@@ -244,6 +244,16 @@ function renderCompetences(categories) {
           </div>
         `).join('')}
       </div>
+      ${cat.pdf ? `
+        <div class="cat-pdf-footer">
+          <button class="btn-pdf" data-url="${esc(cat.pdf)}" data-filename="${esc(cat.pdfNom || 'document.pdf')}" onclick="openPdfModal(this)">
+            <i class="fa-solid fa-eye"></i> Voir le document
+          </button>
+          <a href="/api/pdf?url=${encodeURIComponent(cat.pdf)}&filename=${encodeURIComponent(cat.pdfNom || 'document.pdf')}" class="btn-pdf btn-pdf-dl">
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>
+      ` : ''}
     </div>
   `).join('');
 

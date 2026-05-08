@@ -648,9 +648,57 @@ function renderCompetencesAdmin() {
         <button class="btn btn-outline btn-sm" onclick="addSkill(${ci})" style="margin-top:4px;">
           <i class="fa-solid fa-plus"></i> Ajouter une compétence
         </button>
+        <div style="border-top:1px solid var(--border); margin-top:12px; padding-top:12px;">
+          <label class="form-label" style="margin-bottom:8px;"><i class="fa-solid fa-file-pdf"></i> Document PDF de la catégorie</label>
+          <div id="comp-pdf-${cat.id}">
+            ${cat.pdf ? `
+              <div class="upload-file-info" style="margin-bottom:8px;">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span class="upload-file-name">${esc(cat.pdfNom || 'document.pdf')}</span>
+                <button class="btn btn-danger btn-sm btn-icon" onclick="deleteCompetencePDF('${cat.id}', ${ci})" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                <a href="${cat.pdf}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i></a>
+              </div>
+            ` : ''}
+          </div>
+          <div class="upload-zone compact" id="comp-dropzone-${cat.id}">
+            <input type="file" accept=".pdf" onchange="uploadCompetencePDF('${cat.id}', ${ci}, this)" />
+            <p class="upload-text" style="font-size:0.82rem;"><i class="fa-solid fa-plus"></i> ${cat.pdf ? 'Remplacer le PDF' : 'Ajouter un PDF'}</p>
+          </div>
+        </div>
       </div>
     </div>
   `).join('');
+}
+
+async function uploadCompetencePDF(catId, ci, input) {
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    const fd = new FormData();
+    fd.append('pdf', file);
+    const result = await apiUpload(`/api/admin/competences/${catId}/pdf`, fd);
+    competencesState[ci].pdf = result.pdf;
+    competencesState[ci].pdfNom = result.pdfNom;
+    competencesState[ci].pdfPublicId = result.pdfPublicId || '';
+    renderCompetencesAdmin();
+    toast('success', 'PDF ajouté', file.name);
+  } catch (err) {
+    toast('error', 'Erreur upload', err.message);
+  }
+}
+
+async function deleteCompetencePDF(catId, ci) {
+  if (!confirm('Supprimer ce PDF ?')) return;
+  try {
+    await apiJSON(`/api/admin/competences/${catId}/pdf`, 'DELETE');
+    competencesState[ci].pdf = '';
+    competencesState[ci].pdfNom = '';
+    competencesState[ci].pdfPublicId = '';
+    renderCompetencesAdmin();
+    toast('success', 'PDF supprimé', '');
+  } catch (err) {
+    toast('error', 'Erreur', err.message);
+  }
 }
 
 function genId() { return `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; }

@@ -789,6 +789,15 @@ a { color: inherit; text-decoration: none; }
 
 .skill-name { font-size: 0.9rem; font-weight: 500; color: var(--text); }
 
+.cat-pdf-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
 /* ===== VEILLE ===== */
 .veille-grid {
   display: grid;
